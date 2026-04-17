@@ -6,6 +6,7 @@
   <title>PhotoFly Rebuild</title>
 
   <link rel="stylesheet" href="src/styles/global.css" />
+  <link rel="stylesheet" href="src/components/footer/Footer.css" />
 
   <!-- React is the library. ReactDOM connects React to the browser page. -->
   <script src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.development.js"></script>
@@ -19,8 +20,17 @@
   <div id="root"></div>
 
   <!-- Component files are loaded before App because App uses them. -->
-  <script type="text/babel" src="src/components/Navbar.jsx"></script>
+  <script type="text/babel" src="src/components/notifications/NotificationButton.jsx"></script>
+  <script type="text/babel" src="src/components/navbar/Navbar.jsx"></script>
+  <script type="text/babel" src="src/components/auth/LoginModal.jsx"></script>
+  <script type="text/babel" src="src/components/auth/SignupModal.jsx"></script>
+  <script type="text/babel" src="src/components/profile/EditProfileModal.jsx"></script>
+  <script type="text/babel" src="src/components/profile/ProfilePage.jsx"></script>
+  <script type="text/babel" src="src/components/footer/Footer.jsx"></script>
   <script type="text/babel" src="src/pages/HomePage.jsx"></script>
+  <script type="text/babel" src="src/pages/AIPhotoFinderPage.jsx"></script>
+  <script type="text/babel" src="src/pages/ContactPage.jsx"></script>
+  <script type="text/babel" src="src/pages/AboutPage.jsx"></script>
   <script type="text/babel" src="src/pages/PackagesPage.jsx"></script>
   <script type="text/babel" src="src/App.jsx"></script>
 </body>
