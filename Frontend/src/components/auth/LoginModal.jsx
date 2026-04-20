@@ -54,7 +54,7 @@ function LoginModal({ isOpen = true, onClose = () => {}, onLogin = () => {}, onF
 
         <div className="auth-modal-header">
           <span className="auth-kicker">Welcome back</span>
-          <h2 id="login-title">Login to PhotoFly</h2>
+          <h2 id="login-title">Sign In to PhotoFly</h2>
           <p>Access your studio dashboard and AI photo galleries.</p>
         </div>
 
