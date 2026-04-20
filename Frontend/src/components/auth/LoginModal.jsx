@@ -99,7 +99,7 @@ function LoginModal({ isOpen = true, onClose = () => {}, onLogin = () => {}, onF
           </div>
 
           <button className="auth-submit-button" type="submit">
-            Login
+            Sign In
           </button>
         </form>
       </section>
