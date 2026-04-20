@@ -45,6 +45,12 @@ function LoginModal({ isOpen = true, onClose = () => {}, onLogin = () => {}, onF
     }
   }
 
+  function handleGoogleLogin() {
+    // Connect Google OAuth here later when backend/auth setup is ready.
+    console.log("Google login clicked");
+    alert("Google login clicked");
+  }
+
   return (
     <div className="auth-modal-backdrop" role="presentation">
       <section className="auth-modal" role="dialog" aria-modal="true" aria-labelledby="login-title">
