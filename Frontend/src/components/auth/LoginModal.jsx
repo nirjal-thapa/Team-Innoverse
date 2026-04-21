@@ -113,6 +113,12 @@ function LoginModal({ isOpen = true, onClose = () => {}, onLogin = () => {}, onF
           <button className="auth-submit-button" type="submit">
             Sign In
           </button>
+
+          <div className="auth-divider">
+            <span></span>
+            <p>or continue with</p>
+            <span></span>
+          </div>
         </form>
       </section>
     </div>
