@@ -133,6 +133,12 @@ function SignupModal({ isOpen = true, onClose = () => {}, onSignup = () => {} })
           <button className="auth-submit-button" type="submit">
             Signup
           </button>
+
+          <div className="auth-divider">
+            <span></span>
+            <p>or continue with</p>
+            <span></span>
+          </div>
         </form>
       </section>
     </div>
