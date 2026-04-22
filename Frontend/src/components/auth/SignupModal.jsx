@@ -56,6 +56,12 @@ function SignupModal({ isOpen = true, onClose = () => {}, onSignup = () => {} })
     }
   }
 
+  function handleGoogleSignup() {
+    // Connect Google signup/OAuth here later when backend/auth setup is ready.
+    console.log("Google signup clicked");
+    alert("Google signup clicked");
+  }
+
   return (
     <div className="auth-modal-backdrop" role="presentation">
       <section className="auth-modal" role="dialog" aria-modal="true" aria-labelledby="signup-title">
