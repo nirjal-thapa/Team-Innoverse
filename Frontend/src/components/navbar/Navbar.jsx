@@ -54,10 +54,20 @@ function Navbar({
       <div className="navbar-actions">
         {!isLoggedIn && (
           <>
-            <button className="login-nav-button" type="button" onClick={onOpenLogin}>
+            <button
+              className="login-nav-button"
+              type="button"
+              onClick={onOpenLogin}
+              aria-label="Open login modal"
+            >
               Login
             </button>
-            <button className="signup-nav-button" type="button" onClick={onOpenSignup}>
+            <button
+              className="signup-nav-button"
+              type="button"
+              onClick={onOpenSignup}
+              aria-label="Open signup modal"
+            >
               Signup
             </button>
           </>
@@ -75,6 +85,7 @@ function Navbar({
                 className="profile-button"
                 type="button"
                 onClick={() => setIsProfileOpen(!isProfileOpen)}
+                aria-label="Open profile menu"
               >
                 <span className="avatar">
                   {user.profileImage ? (
@@ -112,6 +123,7 @@ function Navbar({
                 setIsProfileOpen(false);
                 onLogout();
               }}
+              aria-label="Log out of PhotoFly"
             >
               Logout
             </button>

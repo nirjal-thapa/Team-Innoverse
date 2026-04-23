@@ -152,6 +152,25 @@ function SignupModal({ isOpen = true, onClose = () => {}, onSignup = () => {} })
               </span>
               Continue with Google
             </button>
+
+            <button className="social-login-button facebook-button" type="button" onClick={handleFacebookSignup}>
+              <span className="social-icon facebook-icon" aria-hidden="true">
+                <svg viewBox="0 0 64 64">
+                  <circle cx="32" cy="32" r="30" fill="#ffffff" />
+                  <circle cx="32" cy="32" r="22" fill="#1877f2" />
+                  <path
+                    fill="#0d47a1"
+                    opacity="0.55"
+                    d="M41 22l13 19c-3 8-11 13-20 13l-9-13 7-1 1 9 9-2 4-18-7-7z"
+                  />
+                  <path
+                    fill="#ffffff"
+                    d="M36.4 33.8h5.3l.8-6.1h-6.1v-3.9c0-1.8.5-3 3.1-3h3.2v-5.4c-.6-.1-2.5-.2-4.7-.2-4.7 0-7.9 2.9-7.9 8.1v4.5h-5.3v6.1h5.3v15h6.3v-15.1z"
+                  />
+                </svg>
+              </span>
+              Continue with Facebook
+            </button>
           </div>
         </form>
       </section>
