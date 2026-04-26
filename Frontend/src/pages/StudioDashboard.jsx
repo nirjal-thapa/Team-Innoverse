@@ -55,6 +55,8 @@ function StudioDashboard({ user, onChangePage }) {
   const [eventForm, setEventForm] = React.useState(emptyForm);
   const [formErrors, setFormErrors] = React.useState({});
   const [editingEventId, setEditingEventId] = React.useState(null);
+  const [sharingEvent, setSharingEvent] = React.useState(null);
+  const [copyMessage, setCopyMessage] = React.useState("");
 
   const totalPhotos = events.reduce((sum, event) => sum + event.photoCount, 0);
   const readyEvents = events.filter((event) => event.progress === 100).length;
@@ -72,6 +74,14 @@ function StudioDashboard({ user, onChangePage }) {
       .slice(0, 3)
       .toUpperCase();
     return `PF-${initials}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
+  }
+
+  function getShareLink(event) {
+    return `${window.location.origin}${window.location.pathname}?gallery=${event.shareCode}`;
+  }
+
+  function getQrUrl(event) {
+    return `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(getShareLink(event))}`;
   }
 
   function openNewEventForm() {
@@ -154,6 +164,21 @@ function StudioDashboard({ user, onChangePage }) {
     closeEventForm();
   }
 
+  function openShareEvent(event) {
+    setSharingEvent(event);
+    setCopyMessage("");
+  }
+
+  function copyShareText(event) {
+    const shareText = `Gallery code: ${event.shareCode}\nGallery link: ${getShareLink(event)}`;
+
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(shareText).then(() => setCopyMessage("Copied share details."));
+    } else {
+      setCopyMessage("Copy this code and link from the box.");
+    }
+  }
+
   return (
     <main className="studio-dashboard">
       <section className="dashboard-header">
@@ -214,6 +239,9 @@ function StudioDashboard({ user, onChangePage }) {
               <div className="dashboard-event-actions">
                 <button type="button" onClick={() => onChangePage("finder")}>
                   View Event Page
+                </button>
+                <button type="button" onClick={() => openShareEvent(event)}>
+                  Share Gallery
                 </button>
                 <button type="button" onClick={() => openEditEventForm(event)}>
                   Edit Event
@@ -326,6 +354,48 @@ function StudioDashboard({ user, onChangePage }) {
                 </button>
               </div>
             </form>
+          </section>
+        </div>
+      )}
+
+      {sharingEvent && (
+        <div className="auth-modal-backdrop" role="presentation">
+          <section className="auth-modal share-modal" role="dialog" aria-modal="true" aria-labelledby="share-title">
+            <button
+              className="modal-close-button"
+              type="button"
+              onClick={() => setSharingEvent(null)}
+              aria-label="Close share dialog"
+            >
+              x
+            </button>
+
+            <div className="auth-modal-header">
+              <span className="auth-kicker">Share gallery</span>
+              <h2 id="share-title">{sharingEvent.name}</h2>
+              <p>Send clients the gallery code or let them scan the QR.</p>
+            </div>
+
+            <div className="share-panel">
+              <img src={getQrUrl(sharingEvent)} alt={`QR code for ${sharingEvent.name}`} />
+
+              <div className="share-details">
+                <label className="form-field">
+                  <span>Gallery code</span>
+                  <input type="text" value={sharingEvent.shareCode} readOnly />
+                </label>
+
+                <label className="form-field">
+                  <span>Gallery link</span>
+                  <input type="text" value={getShareLink(sharingEvent)} readOnly />
+                </label>
+
+                <button className="auth-submit-button" type="button" onClick={() => copyShareText(sharingEvent)}>
+                  Copy Share Details
+                </button>
+                {copyMessage && <small className="share-copy-message">{copyMessage}</small>}
+              </div>
+            </div>
           </section>
         </div>
       )}
