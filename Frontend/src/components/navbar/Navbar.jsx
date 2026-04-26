@@ -13,6 +13,7 @@ function Navbar({
   const [isProfileOpen, setIsProfileOpen] = React.useState(false);
   const pages = [
     { id: "home", label: "Home" },
+    ...(isLoggedIn ? [{ id: "dashboard", label: "Studio Home" }] : []),
     { id: "finder", label: "AI Photo Finder" },
     { id: "packages", label: "Packages" },
     { id: "contact", label: "Contact Us" },
