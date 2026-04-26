@@ -58,13 +58,13 @@ function StudioDashboard({ user, onChangePage }) {
   const [sharingEvent, setSharingEvent] = React.useState(null);
   const [copyMessage, setCopyMessage] = React.useState("");
 
-  const totalPhotos = events.reduce((sum, event) => sum + event.photoCount, 0);
-  const readyEvents = events.filter((event) => event.progress === 100).length;
-  const isEditingEvent = Boolean(editingEventId);
-
   React.useEffect(() => {
     localStorage.setItem(eventsStorageKey, JSON.stringify(events));
   }, [events, eventsStorageKey]);
+
+  const totalPhotos = events.reduce((sum, event) => sum + event.photoCount, 0);
+  const readyEvents = events.filter((event) => event.progress === 100).length;
+  const isEditingEvent = Boolean(editingEventId);
 
   function generateShareCode(name) {
     const initials = (name || "Event")
@@ -300,30 +300,32 @@ function StudioDashboard({ user, onChangePage }) {
                 {formErrors.date && <small className="field-error">{formErrors.date}</small>}
               </label>
 
-              <label className="form-field">
-                <span>Photos</span>
-                <input
-                  type="number"
-                  name="photoCount"
-                  min="0"
-                  value={eventForm.photoCount}
-                  onChange={handleFormChange}
-                />
-                {formErrors.photoCount && <small className="field-error">{formErrors.photoCount}</small>}
-              </label>
+              <div className="dashboard-form-grid">
+                <label className="form-field">
+                  <span>Photos</span>
+                  <input
+                    type="number"
+                    name="photoCount"
+                    min="0"
+                    value={eventForm.photoCount}
+                    onChange={handleFormChange}
+                  />
+                  {formErrors.photoCount && <small className="field-error">{formErrors.photoCount}</small>}
+                </label>
 
-              <label className="form-field">
-                <span>Progress</span>
-                <input
-                  type="number"
-                  name="progress"
-                  min="0"
-                  max="100"
-                  value={eventForm.progress}
-                  onChange={handleFormChange}
-                />
-                {formErrors.progress && <small className="field-error">{formErrors.progress}</small>}
-              </label>
+                <label className="form-field">
+                  <span>Progress</span>
+                  <input
+                    type="number"
+                    name="progress"
+                    min="0"
+                    max="100"
+                    value={eventForm.progress}
+                    onChange={handleFormChange}
+                  />
+                  {formErrors.progress && <small className="field-error">{formErrors.progress}</small>}
+                </label>
+              </div>
 
               <label className="form-field">
                 <span>Status</span>
