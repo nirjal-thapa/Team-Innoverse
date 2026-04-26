@@ -121,40 +121,68 @@ button {
   display: flex;
   align-items: center;
   gap: 9px;
-  padding: 5px 12px 5px 6px;
-  color: #1f2937;
+  max-width: 230px;
+  min-height: 42px;
+  padding: 6px 12px 6px 7px;
+  color: #111827;
   background: #ffffff;
-  border: 1px solid #f3d7a7;
+  border: 1px solid #e0e0e0;
+  box-shadow: 0 6px 14px rgba(15, 23, 42, 0.04);
 }
 
 .profile-button:hover {
-  background: #fff7ed;
-  border-color: #f59e0b;
-  box-shadow: 0 8px 18px rgba(146, 64, 14, 0.1);
+  background: #f9fafb;
+  border-color: #cbd5e1;
+  box-shadow: 0 9px 18px rgba(15, 23, 42, 0.08);
+  transform: translateY(-1px);
+}
+
+.profile-button:focus-visible,
+.login-nav-button:focus-visible,
+.signup-nav-button:focus-visible,
+.notification-button:focus-visible {
+  outline: 3px solid rgba(245, 158, 11, 0.22);
+  outline-offset: 3px;
 }
 
 .avatar {
   overflow: hidden;
   display: grid;
-  width: 30px;
-  height: 30px;
+  width: 29px;
+  height: 29px;
   place-items: center;
   color: #ffffff;
-  font-weight: 700;
-  background: #d97706;
+  font-size: 0.84rem;
+  font-weight: 900;
+  background: linear-gradient(135deg, #d97706, #f97316);
   border-radius: 999px;
+  box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.22);
+}
+
+.profile-chip-name {
+  overflow: hidden;
+  max-width: 135px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #111827;
+  font-size: 0.95rem;
+  font-weight: 500;
+  letter-spacing: 0;
 }
 
 .dropdown-arrow {
-  color: #9ca3af;
-  font-size: 0.85rem;
+  color: #6b7280;
+  font-size: 0.78rem;
+  font-weight: 900;
+  line-height: 1;
+  transform: translateY(1px);
 }
 
 .profile-menu {
   position: absolute;
   top: 50px;
   right: 0;
-  width: 220px;
+  width: 240px;
   padding: 14px;
   background: #ffffff;
   border: 1px solid #e5e7eb;
@@ -164,7 +192,9 @@ button {
 
 .profile-name {
   margin: 0 0 4px;
-  font-weight: 700;
+  color: #1f2937;
+  font-size: 0.95rem;
+  font-weight: 500;
 }
 
 .profile-email {
@@ -176,13 +206,54 @@ button {
 .profile-menu-button {
   width: 100%;
   min-height: 36px;
-  margin-top: 12px;
-  color: #92400e;
-  font-weight: 800;
-  background: #fff7ed;
-  border: 1px solid #fed7aa;
+  margin-top: 8px;
+  color: #374151;
+  font-weight: 700;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
   border-radius: 8px;
   cursor: pointer;
+  transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.profile-menu-button:hover,
+.profile-menu-button:focus-visible {
+  color: #92400e;
+  background: #fff7ed;
+  border-color: #fed7aa;
+  box-shadow: 0 6px 14px rgba(146, 64, 14, 0.08);
+  outline: none;
+}
+
+.profile-menu-button.secondary {
+  color: #374151;
+  background: #ffffff;
+  border-color: #e5e7eb;
+}
+
+.profile-menu-button.secondary:hover,
+.profile-menu-button.secondary:focus-visible {
+  color: #92400e;
+  background: #fff7ed;
+  border-color: #fed7aa;
+}
+
+.profile-menu-button.danger {
+  color: #9f1239;
+  background: #ffffff;
+  border-color: #fecdd3;
+}
+
+.profile-menu-button.danger:hover {
+  color: #881337;
+  background: #fff1f2;
+  border-color: #fda4af;
+}
+
+.profile-menu-divider {
+  height: 1px;
+  margin: 12px 0 4px;
+  background: #f1f5f9;
 }
 
 .notification-area {
@@ -192,40 +263,48 @@ button {
 .notification-button {
   position: relative;
   display: grid;
-  width: 40px;
-  height: 40px;
+  width: 34px;
+  height: 34px;
   place-items: center;
-  color: #92400e;
-  background: #ffffff;
-  border: 1px solid #f8d18a;
-  border-radius: 8px;
+  color: #4b5563;
+  background: transparent;
+  border: 0;
+  border-radius: 999px;
   cursor: pointer;
   transition: background 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
 }
 
 .notification-button:hover {
-  background: #fff7ed;
-  border-color: #f59e0b;
-  box-shadow: 0 8px 18px rgba(146, 64, 14, 0.1);
+  color: #111827;
+  background: #f3f4f6;
+  box-shadow: none;
   transform: translateY(-1px);
 }
 
 .bell-icon {
-  font-size: 1rem;
-  line-height: 1;
+  display: grid;
+  width: 21px;
+  height: 21px;
+  place-items: center;
+}
+
+.bell-icon svg {
+  display: block;
+  width: 21px;
+  height: 21px;
 }
 
 .notification-badge {
   position: absolute;
-  top: -7px;
-  right: -7px;
+  top: 1px;
+  right: 0;
   display: grid;
-  min-width: 20px;
-  height: 20px;
+  min-width: 17px;
+  height: 17px;
   place-items: center;
-  padding: 0 5px;
+  padding: 0 4px;
   color: #ffffff;
-  font-size: 0.72rem;
+  font-size: 0.65rem;
   font-weight: 900;
   background: #ef4444;
   border: 2px solid #ffffff;
@@ -1731,6 +1810,10 @@ button {
 
   .logo-image {
     width: 145px;
+  }
+
+  .profile-button {
+    max-width: 100%;
   }
 
   .home-container {
