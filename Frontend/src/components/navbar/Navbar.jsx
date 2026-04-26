@@ -29,6 +29,12 @@ function Navbar({
       .toUpperCase();
   }
 
+  function formatDisplayName(name) {
+    return (name || "Profile")
+      .toLowerCase()
+      .replace(/\b\w/g, (letter) => letter.toUpperCase());
+  }
+
   return (
     <header className="navbar">
       <div className="navbar-brand">
@@ -88,14 +94,8 @@ function Navbar({
                 onClick={() => setIsProfileOpen(!isProfileOpen)}
                 aria-label="Open profile menu"
               >
-                <span className="avatar">
-                  {user.profileImage ? (
-                    <img src={user.profileImage} alt="" className="avatar-image" />
-                  ) : (
-                    getInitials(user.fullName)
-                  )}
-                </span>
-                <span>Profile</span>
+                <span className="avatar">{getInitials(user.fullName)}</span>
+                <span className="profile-chip-name">{formatDisplayName(user.fullName)}</span>
                 <span className="dropdown-arrow">v</span>
               </button>
 
@@ -104,30 +104,29 @@ function Navbar({
                   <p className="profile-name">{user.fullName || studioName}</p>
                   <p className="profile-email">{user.email}</p>
                   <button
-                    className="profile-menu-button"
+                    className="profile-menu-button secondary"
                     type="button"
                     onClick={() => {
                       onChangePage("profile");
                       setIsProfileOpen(false);
                     }}
                   >
-                    View profile
+                    Settings
+                  </button>
+                  <div className="profile-menu-divider" role="separator"></div>
+                  <button
+                    className="profile-menu-button danger"
+                    type="button"
+                    onClick={() => {
+                      setIsProfileOpen(false);
+                      onLogout();
+                    }}
+                  >
+                    Logout
                   </button>
                 </div>
               )}
             </div>
-
-            <button
-              className="logout-button"
-              type="button"
-              onClick={() => {
-                setIsProfileOpen(false);
-                onLogout();
-              }}
-              aria-label="Log out of PhotoFly"
-            >
-              Logout
-            </button>
           </>
         )}
       </div>
