@@ -1,6 +1,7 @@
 function StudioDashboard({ user, onChangePage }) {
   const defaultCover =
     "https://images.pexels.com/photos/3812639/pexels-photo-3812639.jpeg?auto=compress&cs=tinysrgb&w=900&h=620&fit=crop";
+  const eventsStorageKey = `photoFly_events_${user?.email || "guest"}`;
   const initialEvents = [
     {
       id: "wedding-gala-2026",
@@ -47,7 +48,10 @@ function StudioDashboard({ user, onChangePage }) {
     cover: "",
   };
 
-  const [events, setEvents] = React.useState(initialEvents);
+  const [events, setEvents] = React.useState(() => {
+    const savedEvents = localStorage.getItem(eventsStorageKey);
+    return savedEvents ? JSON.parse(savedEvents) : initialEvents;
+  });
   const [eventForm, setEventForm] = React.useState(emptyForm);
   const [formErrors, setFormErrors] = React.useState({});
   const [editingEventId, setEditingEventId] = React.useState(null);
@@ -55,6 +59,10 @@ function StudioDashboard({ user, onChangePage }) {
   const totalPhotos = events.reduce((sum, event) => sum + event.photoCount, 0);
   const readyEvents = events.filter((event) => event.progress === 100).length;
   const isEditingEvent = Boolean(editingEventId);
+
+  React.useEffect(() => {
+    localStorage.setItem(eventsStorageKey, JSON.stringify(events));
+  }, [events, eventsStorageKey]);
 
   function generateShareCode(name) {
     const initials = (name || "Event")
