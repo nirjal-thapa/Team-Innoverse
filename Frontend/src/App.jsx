@@ -88,7 +88,7 @@ function App() {
     saveUser(newUser);
     addNotifications(["Account created successfully"]);
     setActiveAuthModal(null);
-    setCurrentPage("profile");
+    setCurrentPage("dashboard");
   }
 
   function handleLoginSuccess(loginData) {
@@ -107,7 +107,7 @@ function App() {
     saveUser(savedUser);
     addNotifications(["You logged in successfully"]);
     setActiveAuthModal(null);
-    setCurrentPage("profile");
+    setCurrentPage("dashboard");
   }
 
   function handleProfileUpdate(updatedUser) {
@@ -140,6 +140,14 @@ function App() {
     if (currentPage === "profile") {
       return isLoggedIn ? (
         <ProfilePage user={currentUser} onUpdateUser={handleProfileUpdate} />
+      ) : (
+        <HomePage onChangePage={setCurrentPage} />
+      );
+    }
+
+    if (currentPage === "dashboard") {
+      return isLoggedIn ? (
+        <StudioDashboard user={currentUser} onChangePage={setCurrentPage} />
       ) : (
         <HomePage onChangePage={setCurrentPage} />
       );
