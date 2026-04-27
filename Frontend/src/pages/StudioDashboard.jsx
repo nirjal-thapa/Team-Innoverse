@@ -71,19 +71,59 @@ function StudioDashboard({ user, onChangePage }) {
     {
       label: "Total Events",
       value: totalEvents,
+      note: "+2 this month",
+      icon: (
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M8 2v4" />
+          <path d="M16 2v4" />
+          <path d="M3 9h18" />
+          <path d="M5 5h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z" />
+          <path d="M8 13h.01" />
+          <path d="M12 13h.01" />
+          <path d="M16 13h.01" />
+          <path d="M8 17h.01" />
+          <path d="M12 17h.01" />
+        </svg>
+      ),
+      tone: "amber",
     },
     {
       label: "Active Events",
       value: activeEvents,
+      note: "Live & sharing",
+      icon: (
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M5 12h3l2.4-5 3.2 10L16 12h3" />
+          <path d="M19 5v14" />
+        </svg>
+      ),
+      tone: "green",
     },
     {
       label: "Total Photos Uploaded",
       value: totalPhotos.toLocaleString(),
+      icon: (
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M4 5h16a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1Z" />
+          <path d="m4 16 4.4-4.4a2 2 0 0 1 2.8 0L16 16" />
+          <path d="m14 14 1.4-1.4a2 2 0 0 1 2.8 0L21 15.4" />
+          <path d="M8 9h.01" />
+        </svg>
+      ),
+      tone: "blue",
     },
     {
       label: "Storage Used",
       value: storageUsed,
       progress: 47,
+      icon: (
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12 3c4.4 0 8 1.3 8 3s-3.6 3-8 3-8-1.3-8-3 3.6-3 8-3Z" />
+          <path d="M4 6v6c0 1.7 3.6 3 8 3s8-1.3 8-3V6" />
+          <path d="M4 12v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6" />
+        </svg>
+      ),
+      tone: "orange",
     },
   ];
 
@@ -224,12 +264,14 @@ function StudioDashboard({ user, onChangePage }) {
             <div>
               <span>{stat.label}</span>
               <strong>{stat.value}</strong>
+              {stat.note && <small className={stat.noteTone || ""}>{stat.note}</small>}
               {stat.progress && (
                 <div className="storage-progress" aria-hidden="true">
                   <span style={{ width: `${stat.progress}%` }}></span>
                 </div>
               )}
             </div>
+            <span className={`dashboard-stat-icon ${stat.tone}`}>{stat.icon}</span>
           </article>
         ))}
       </section>

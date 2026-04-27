@@ -1569,6 +1569,9 @@ button {
 }
 
 .dashboard-stats article {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
   min-height: 146px;
   padding: 20px;
   background: #ffffff;
@@ -1590,6 +1593,68 @@ button {
   color: #111827;
   font-size: 2rem;
   line-height: 1;
+}
+
+.dashboard-stats small {
+  display: block;
+  margin-top: 10px;
+  color: #008a18;
+  font-size: 0.86rem;
+  font-weight: 700;
+}
+
+.dashboard-stats small.blue {
+  color: #2563eb;
+}
+
+.dashboard-stats small.orange {
+  color: #ea580c;
+}
+
+.dashboard-stat-icon {
+  display: grid;
+  width: 48px;
+  height: 48px;
+  margin-top: 0;
+  place-items: center;
+  flex: 0 0 auto;
+  border-radius: 14px;
+}
+
+.dashboard-stat-icon svg {
+  display: block;
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.dashboard-stat-icon.amber {
+  color: #d97706;
+  background: #fef3c7;
+}
+
+.dashboard-stat-icon.green {
+  color: #059669;
+  background: #bbf7d0;
+}
+
+.dashboard-stat-icon.blue {
+  color: #2563eb;
+  background: #dbeafe;
+}
+
+.dashboard-stat-icon.purple {
+  color: #7e22ce;
+  background: #f3e8ff;
+}
+
+.dashboard-stat-icon.orange {
+  color: #ea580c;
+  background: #ffedd5;
 }
 
 .storage-progress {
