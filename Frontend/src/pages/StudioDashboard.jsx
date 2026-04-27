@@ -62,9 +62,21 @@ function StudioDashboard({ user, onChangePage }) {
     localStorage.setItem(eventsStorageKey, JSON.stringify(events));
   }, [events, eventsStorageKey]);
 
+  const totalEvents = events.length;
+  const activeEvents = events.filter((event) => event.progress < 100).length;
   const totalPhotos = events.reduce((sum, event) => sum + event.photoCount, 0);
   const readyEvents = events.filter((event) => event.progress === 100).length;
   const isEditingEvent = Boolean(editingEventId);
+  const statCards = [
+    {
+      label: "Total Events",
+      value: totalEvents,
+    },
+    {
+      label: "Active Events",
+      value: activeEvents,
+    },
+  ];
 
   function generateShareCode(name) {
     const initials = (name || "Event")
@@ -198,14 +210,14 @@ function StudioDashboard({ user, onChangePage }) {
       </section>
 
       <section className="dashboard-stats" aria-label="Studio overview">
-        <article>
-          <span>Active Events</span>
-          <strong>{events.length}</strong>
-        </article>
-        <article>
-          <span>Total Photos</span>
-          <strong>{totalPhotos.toLocaleString()}</strong>
-        </article>
+        {statCards.map((stat) => (
+          <article key={stat.label}>
+            <div>
+              <span>{stat.label}</span>
+              <strong>{stat.value}</strong>
+            </div>
+          </article>
+        ))}
         <article>
           <span>Ready Galleries</span>
           <strong>{readyEvents}</strong>

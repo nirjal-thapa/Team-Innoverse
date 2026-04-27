@@ -1569,6 +1569,7 @@ button {
 }
 
 .dashboard-stats article {
+  min-height: 146px;
   padding: 20px;
   background: #ffffff;
   border: 1px solid #eef0f3;
