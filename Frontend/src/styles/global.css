@@ -1563,7 +1563,7 @@ button {
 
 .dashboard-stats {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 18px;
   margin-bottom: 26px;
 }
@@ -1590,6 +1590,22 @@ button {
   color: #111827;
   font-size: 2rem;
   line-height: 1;
+}
+
+.storage-progress {
+  overflow: hidden;
+  width: 138px;
+  height: 8px;
+  margin-top: 14px;
+  background: #e5e7eb;
+  border-radius: 999px;
+}
+
+.storage-progress span {
+  display: block;
+  height: 100%;
+  background: #d97706;
+  border-radius: inherit;
 }
 
 .dashboard-event-list {

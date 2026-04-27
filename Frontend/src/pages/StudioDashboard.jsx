@@ -65,7 +65,7 @@ function StudioDashboard({ user, onChangePage }) {
   const totalEvents = events.length;
   const activeEvents = events.filter((event) => event.progress < 100).length;
   const totalPhotos = events.reduce((sum, event) => sum + event.photoCount, 0);
-  const readyEvents = events.filter((event) => event.progress === 100).length;
+  const storageUsed = "47.2 GB";
   const isEditingEvent = Boolean(editingEventId);
   const statCards = [
     {
@@ -75,6 +75,15 @@ function StudioDashboard({ user, onChangePage }) {
     {
       label: "Active Events",
       value: activeEvents,
+    },
+    {
+      label: "Total Photos Uploaded",
+      value: totalPhotos.toLocaleString(),
+    },
+    {
+      label: "Storage Used",
+      value: storageUsed,
+      progress: 47,
     },
   ];
 
@@ -215,13 +224,14 @@ function StudioDashboard({ user, onChangePage }) {
             <div>
               <span>{stat.label}</span>
               <strong>{stat.value}</strong>
+              {stat.progress && (
+                <div className="storage-progress" aria-hidden="true">
+                  <span style={{ width: `${stat.progress}%` }}></span>
+                </div>
+              )}
             </div>
           </article>
         ))}
-        <article>
-          <span>Ready Galleries</span>
-          <strong>{readyEvents}</strong>
-        </article>
       </section>
 
       <section className="dashboard-event-list" aria-label="Event list">
