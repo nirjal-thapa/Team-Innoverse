@@ -3,7 +3,7 @@ function ContactPage() {
     <main className="contact-page">
       <section className="contact-hero">
         <div className="contact-hero-copy">
-          <span className="simple-page-badge">Contact Us</span>
+          <span className="simple-page-badge">Contact</span>
           <h1>Talk to the PhotoFly team</h1>
           <p>
             Have questions about events, AI photo matching, or studio plans?
