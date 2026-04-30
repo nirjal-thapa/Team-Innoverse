@@ -1,6 +1,6 @@
 function ContactPage() {
   return (
-    <main className="simple-page">
+    <main className="contact-page">
       <section className="simple-page-hero">
         <div className="simple-page-content">
           <span className="simple-page-badge">Contact Us</span>
