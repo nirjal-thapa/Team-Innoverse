@@ -4,10 +4,10 @@ function ContactPage() {
       <section className="contact-hero">
         <div className="contact-hero-copy">
           <span className="simple-page-badge">Contact</span>
-          <h1>Talk to the PhotoFly team</h1>
+          <h1>Let us help your studio deliver photos faster</h1>
           <p>
-            Have questions about events, AI photo matching, or studio plans?
-            Reach out and Team Innoverse will help you get started.
+            Talk with Team Innoverse about events, AI photo matching, gallery delivery,
+            or the right PhotoFly plan for your workflow.
           </p>
         </div>
       </section>
