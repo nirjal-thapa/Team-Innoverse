@@ -982,6 +982,22 @@ button {
   background-size: cover;
 }
 
+.contact-page {
+  min-height: calc(100vh - 71px);
+  padding-bottom: 72px;
+  background: #fffaf3;
+}
+
+.contact-hero {
+  padding: 72px 20px 48px;
+  background:
+    linear-gradient(135deg, rgba(255, 247, 237, 0.96), rgba(255, 255, 255, 0.9)),
+    url("https://images.pexels.com/photos/3062541/pexels-photo-3062541.jpeg?auto=compress&cs=tinysrgb&w=1600&h=800&fit=crop");
+  background-position: center;
+  background-size: cover;
+  border-bottom: 1px solid #f8d18a;
+}
+
 .simple-page-content {
   width: min(860px, 100%);
   margin: 0 auto;
