@@ -69,6 +69,18 @@ function ContactPage() {
             <span>Send a Message</span>
             <h2>Tell us what you need</h2>
           </div>
+
+          <div className="contact-form-grid">
+            <label className="form-field">
+              <span>Name</span>
+              <input type="text" name="name" placeholder="Your name" required />
+            </label>
+
+            <label className="form-field">
+              <span>Email</span>
+              <input type="email" name="email" placeholder="studio@example.com" required />
+            </label>
+          </div>
         </form>
       </section>
     </main>
