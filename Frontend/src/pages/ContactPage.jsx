@@ -47,6 +47,20 @@ function ContactPage() {
                 <p>Kathmandu, Nepal</p>
               </div>
             </article>
+
+            <article>
+              <span className="contact-method-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                  <path d="M4 14a8 8 0 0 1 16 0" />
+                  <path d="M4 14v3a2 2 0 0 0 2 2h2v-7H6a2 2 0 0 0-2 2Z" />
+                  <path d="M20 14v3a2 2 0 0 1-2 2h-2v-7h2a2 2 0 0 1 2 2Z" />
+                </svg>
+              </span>
+              <div>
+                <h3>Studio Support</h3>
+                <p>Wedding, event, and photography studio workflows.</p>
+              </div>
+            </article>
           </div>
         </div>
       </section>
