@@ -63,6 +63,13 @@ function ContactPage() {
             </article>
           </div>
         </div>
+
+        <form className="contact-form">
+          <div className="contact-form-heading">
+            <span>Send a Message</span>
+            <h2>Tell us what you need</h2>
+          </div>
+        </form>
       </section>
     </main>
   );
