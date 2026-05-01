@@ -16,6 +16,10 @@ function ContactPage() {
         <div className="contact-info-panel">
           <span className="contact-panel-label">PhotoFly Support</span>
           <h2>We are here for studios, events, and client galleries.</h2>
+          <p>
+            Send us your question and we will help you plan uploads, AI face search,
+            client sharing, or account setup.
+          </p>
         </div>
       </section>
     </main>
