@@ -20,6 +20,21 @@ function ContactPage() {
             Send us your question and we will help you plan uploads, AI face search,
             client sharing, or account setup.
           </p>
+
+          <div className="contact-methods">
+            <article>
+              <span className="contact-method-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                  <path d="M4 6h16v12H4z" />
+                  <path d="m4 7 8 6 8-6" />
+                </svg>
+              </span>
+              <div>
+                <h3>Email</h3>
+                <p>support@photofly.com</p>
+              </div>
+            </article>
+          </div>
         </div>
       </section>
     </main>
