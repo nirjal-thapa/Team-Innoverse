@@ -34,6 +34,19 @@ function ContactPage() {
                 <p>support@photofly.com</p>
               </div>
             </article>
+
+            <article>
+              <span className="contact-method-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                  <path d="M12 21s7-4.4 7-11a7 7 0 0 0-14 0c0 6.6 7 11 7 11Z" />
+                  <circle cx="12" cy="10" r="2.5" />
+                </svg>
+              </span>
+              <div>
+                <h3>Location</h3>
+                <p>Kathmandu, Nepal</p>
+              </div>
+            </article>
           </div>
         </div>
       </section>
