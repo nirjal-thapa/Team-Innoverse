@@ -91,6 +91,11 @@ function ContactPage() {
               <option>Event gallery support</option>
             </select>
           </label>
+
+          <label className="form-field">
+            <span>Message</span>
+            <textarea name="message" rows="5" placeholder="How can we help?" required></textarea>
+          </label>
         </form>
       </section>
     </main>
