@@ -1004,6 +1004,21 @@ button {
   text-align: center;
 }
 
+.contact-hero h1 {
+  margin: 18px auto 0;
+  color: #111827;
+  font-size: clamp(2.25rem, 4vw, 3.45rem);
+  line-height: 1.08;
+}
+
+.contact-hero p {
+  max-width: 700px;
+  margin: 18px auto 0;
+  color: #4b5563;
+  font-size: 1.05rem;
+  line-height: 1.65;
+}
+
 .contact-shell {
   display: grid;
   grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
@@ -1023,6 +1038,24 @@ button {
 
 .contact-info-panel {
   padding: 30px;
+}
+
+.contact-panel-label,
+.contact-form-heading span {
+  display: inline-flex;
+  color: #b45309;
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.contact-info-panel h2,
+.contact-form-heading h2 {
+  margin: 10px 0 0;
+  color: #111827;
+  font-size: 1.7rem;
+  line-height: 1.18;
 }
 
 .contact-info-panel > p {
@@ -1048,6 +1081,38 @@ button {
   border-radius: 8px;
 }
 
+.contact-method-icon {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  color: #d97706;
+  background: #fef3c7;
+  border-radius: 10px;
+}
+
+.contact-method-icon svg {
+  width: 21px;
+  height: 21px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.1;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.contact-methods h3 {
+  margin: 0;
+  color: #111827;
+  font-size: 1rem;
+}
+
+.contact-methods p {
+  margin: 5px 0 0;
+  color: #6b7280;
+  line-height: 1.45;
+}
+
 .contact-form {
   display: grid;
   gap: 18px;
@@ -1063,6 +1128,49 @@ button {
 .contact-form textarea {
   resize: vertical;
   min-height: 128px;
+}
+
+.contact-submit-button {
+  min-height: 48px;
+  color: #ffffff;
+  font-size: 1rem;
+  font-weight: 900;
+  background: linear-gradient(90deg, #f59e0b, #f97316);
+  border: 0;
+  border-radius: 8px;
+  box-shadow: 0 12px 20px rgba(249, 115, 22, 0.22);
+  cursor: pointer;
+}
+
+.contact-submit-button:hover {
+  transform: translateY(-1px);
+}
+
+.contact-status {
+  margin: 0;
+  padding: 12px 14px;
+  color: #166534;
+  font-weight: 800;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 8px;
+}
+
+.form-field select {
+  width: 100%;
+  min-height: 46px;
+  padding: 0 14px;
+  color: #111827;
+  background: #ffffff;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  outline: none;
+}
+
+.form-field input:focus,
+.form-field select:focus {
+  border-color: #f59e0b;
+  box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.14);
 }
 
 .simple-page-content {
