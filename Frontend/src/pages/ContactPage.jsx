@@ -81,6 +81,16 @@ function ContactPage() {
               <input type="email" name="email" placeholder="studio@example.com" required />
             </label>
           </div>
+
+          <label className="form-field">
+            <span>Topic</span>
+            <select name="topic" defaultValue="AI photo finder">
+              <option>AI photo finder</option>
+              <option>Studio dashboard</option>
+              <option>Packages and pricing</option>
+              <option>Event gallery support</option>
+            </select>
+          </label>
         </form>
       </section>
     </main>
