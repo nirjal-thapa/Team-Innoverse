@@ -2050,6 +2050,29 @@ button {
     padding: 38px 0;
   }
 
+  .contact-page {
+    padding-bottom: 52px;
+  }
+
+  .contact-hero {
+    padding: 54px 20px 38px;
+  }
+
+  .contact-shell,
+  .contact-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .contact-shell {
+    width: min(100% - 32px, 1120px);
+    margin-top: 30px;
+  }
+
+  .contact-info-panel,
+  .contact-form {
+    padding: 24px;
+  }
+
   .contact-card:last-child {
     grid-column: auto;
   }
