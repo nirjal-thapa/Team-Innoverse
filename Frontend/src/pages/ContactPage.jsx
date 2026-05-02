@@ -1,4 +1,11 @@
 function ContactPage() {
+  const [statusMessage, setStatusMessage] = React.useState("");
+
+  function handleSubmit(event) {
+    event.preventDefault();
+    setStatusMessage("Thanks for reaching out. Team Innoverse will get back to you soon.");
+  }
+
   return (
     <main className="contact-page">
       <section className="contact-hero">
@@ -64,7 +71,7 @@ function ContactPage() {
           </div>
         </div>
 
-        <form className="contact-form">
+        <form className="contact-form" onSubmit={handleSubmit}>
           <div className="contact-form-heading">
             <span>Send a Message</span>
             <h2>Tell us what you need</h2>
@@ -96,6 +103,12 @@ function ContactPage() {
             <span>Message</span>
             <textarea name="message" rows="5" placeholder="How can we help?" required></textarea>
           </label>
+
+          <button className="contact-submit-button" type="submit">
+            Send Message
+          </button>
+
+          {statusMessage && <p className="contact-status">{statusMessage}</p>}
         </form>
       </section>
     </main>
