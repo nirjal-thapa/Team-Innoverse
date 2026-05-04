@@ -54,53 +54,84 @@ function Footer({ onChangePage }) {
   }
 
   return (
-    <footer className="site-footer">
-      <div className="footer-container">
-        <div className="footer-brand">
-          <img
-            src="src/assets/photofly-logo.png"
-            alt="PhotoFly logo"
-            className="footer-logo"
-          />
-          <p className="footer-tagline">Capture. Explore. Share.</p>
-          <p className="footer-description">AI-powered photo discovery by Team Innoverse.</p>
+    <>
+      <footer className="site-footer">
+        <div className="footer-container">
+          <div className="footer-brand">
+            <img
+              src="src/assets/photofly-logo.png"
+              alt="PhotoFly logo"
+              className="footer-logo"
+            />
+            <p className="footer-tagline">Capture. Explore. Share.</p>
+            <p className="footer-description">AI-powered photo discovery by Team Innoverse.</p>
+          </div>
+
+          <nav className="footer-column" aria-label="Footer quick links">
+            <h2>Quick Links</h2>
+            {quickLinks.map((link) => (
+              <button key={link.id} type="button" onClick={() => handleFooterLink(link.id)}>
+                {link.label}
+              </button>
+            ))}
+          </nav>
+
+          <nav className="footer-column" aria-label="Footer support links">
+            <h2>Support</h2>
+            {["Help Center", policyContent.privacy.label, policyContent.terms.label].map((link) => (
+              <button key={link} type="button" onClick={() => handleSupportLink(link)}>
+                {link}
+              </button>
+            ))}
+          </nav>
+
+          <div className="footer-column footer-contact">
+            <h2>Contact</h2>
+            <p>
+              <span>Email</span>
+              support@photofly.com
+            </p>
+            <p>
+              <span>Location</span>
+              Kathmandu, Nepal
+            </p>
+          </div>
         </div>
 
-        <nav className="footer-column" aria-label="Footer quick links">
-          <h2>Quick Links</h2>
-          {quickLinks.map((link) => (
-            <button key={link.id} type="button" onClick={() => handleFooterLink(link.id)}>
-              {link.label}
-            </button>
-          ))}
-        </nav>
-
-        <nav className="footer-column" aria-label="Footer support links">
-          <h2>Support</h2>
-          {["Help Center", policyContent.privacy.label, policyContent.terms.label].map((link) => (
-            <button key={link} type="button" onClick={() => handleSupportLink(link)}>
-              {link}
-            </button>
-          ))}
-        </nav>
-
-        <div className="footer-column footer-contact">
-          <h2>Contact</h2>
-          <p>
-            <span>Email</span>
-            support@photofly.com
-          </p>
-          <p>
-            <span>Location</span>
-            Kathmandu, Nepal
-          </p>
+        <div className="footer-bottom">
+          <p>&copy; 2026 PhotoFly. All rights reserved.</p>
+          <p>by Innoverse Studio - Nepal</p>
         </div>
-      </div>
+      </footer>
 
-      <div className="footer-bottom">
-        <p>&copy; 2026 PhotoFly. All rights reserved.</p>
-        <p>by Innoverse Studio - Nepal</p>
-      </div>
-    </footer>
+      {activePolicy && (
+        <div className="footer-modal-backdrop" role="presentation" onClick={closePolicyModal}>
+          <section
+            className="footer-policy-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="footer-policy-title"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <button
+              className="footer-modal-close"
+              type="button"
+              onClick={closePolicyModal}
+              aria-label="Close policy modal"
+            >
+              x
+            </button>
+            <span className="footer-policy-kicker">PhotoFly</span>
+            <h2 id="footer-policy-title">{policyContent[activePolicy].title}</h2>
+            <p>{policyContent[activePolicy].intro}</p>
+            <ul>
+              {policyContent[activePolicy].points.map((point) => (
+                <li key={point}>{point}</li>
+              ))}
+            </ul>
+          </section>
+        </div>
+      )}
+    </>
   );
 }
