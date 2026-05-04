@@ -67,7 +67,7 @@ function LoginModal({ isOpen = true, onClose = () => {}, onLogin = () => {}, onF
         <div className="auth-modal-header">
           <span className="auth-kicker">Welcome back</span>
           <h2 id="login-title">Sign In to PhotoFly</h2>
-          <p>Access your studio dashboard and AI photo galleries.</p>
+          <p>Access your studio home and AI photo galleries.</p>
         </div>
 
         <form className="auth-form" onSubmit={handleSubmit} noValidate>
