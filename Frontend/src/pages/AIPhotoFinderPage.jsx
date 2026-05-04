@@ -15,6 +15,21 @@ function AIPhotoFinderPage() {
       ),
       tone: "blue",
     },
+    {
+      label: "Total Face Searches",
+      value: "342",
+      note: "+23% this week",
+      noteTone: "blue",
+      icon: (
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="12" r="8" />
+          <path d="M9 10h.01" />
+          <path d="M15 10h.01" />
+          <path d="M9 15c1.7 1.4 4.3 1.4 6 0" />
+        </svg>
+      ),
+      tone: "purple",
+    },
   ];
 
   function addPhotos(fileList) {
