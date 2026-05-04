@@ -168,6 +168,40 @@ function AIPhotoFinderPage() {
               </div>
             </div>
           )}
+
+          <div className="ai-upload-actions">
+            <button className="ai-upload-primary" type="button" onClick={uploadPhotos}>
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 16V5" />
+                <path d="m7 10 5-5 5 5" />
+                <path d="M20 16.5V19a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-2.5" />
+              </svg>
+              Upload Photo
+            </button>
+            <button className="ai-upload-secondary" type="button" onClick={viewAllPhotos}>
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M4 5h16v14H4z" />
+                <path d="m4 16 4-4 4 4 2-2 6 5" />
+                <path d="M8 9h.01" />
+              </svg>
+              View All Photo
+            </button>
+          </div>
+
+          {uploadMessage && <p className="ai-upload-message">{uploadMessage}</p>}
+
+          {uploadedPhotos.length > 0 && (
+            <div className="ai-uploaded-photos" id="ai-uploaded-photos">
+              <h3>All Uploaded Photos ({uploadedPhotos.length})</h3>
+              <div className="ai-photo-grid">
+                {uploadedPhotos.map((photo, index) => (
+                  <div className="ai-photo-thumb" key={`uploaded-${photo.name}-${index}`}>
+                    <img src={URL.createObjectURL(photo)} alt="" />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </section>
 
