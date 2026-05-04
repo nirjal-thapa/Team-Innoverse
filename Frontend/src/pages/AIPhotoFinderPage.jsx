@@ -1,6 +1,8 @@
 function AIPhotoFinderPage() {
   const [selectedPhotos, setSelectedPhotos] = React.useState([]);
+  const [uploadedPhotos, setUploadedPhotos] = React.useState([]);
   const [isDragging, setIsDragging] = React.useState(false);
+  const [uploadMessage, setUploadMessage] = React.useState("");
   const finderStats = [
     {
       label: "Total Photos Uploaded",
@@ -53,6 +55,7 @@ function AIPhotoFinderPage() {
     }
 
     setSelectedPhotos((currentPhotos) => [...currentPhotos, ...photos]);
+    setUploadMessage("");
   }
 
   function handleDrag(event) {
@@ -76,6 +79,27 @@ function AIPhotoFinderPage() {
     setSelectedPhotos((currentPhotos) =>
       currentPhotos.filter((photo, index) => index !== indexToRemove)
     );
+  }
+
+  function uploadPhotos() {
+    if (!selectedPhotos.length) {
+      setUploadMessage("Please select photos before uploading.");
+      return;
+    }
+
+    setUploadedPhotos(selectedPhotos);
+    setUploadMessage(`${selectedPhotos.length} photo${selectedPhotos.length === 1 ? "" : "s"} uploaded.`);
+  }
+
+  function viewAllPhotos() {
+    const gallery = document.getElementById("ai-uploaded-photos");
+
+    if (gallery && uploadedPhotos.length) {
+      gallery.scrollIntoView({ behavior: "smooth" });
+      return;
+    }
+
+    setUploadMessage("Upload photos first to view them here.");
   }
 
   return (
