@@ -1,9 +1,9 @@
 function Footer({ onChangePage }) {
   const quickLinks = [
     { id: "home", label: "Home" },
-    { id: "finder", label: "AI Photo Finder" },
+    { id: "finder", label: "AI Finder" },
     { id: "packages", label: "Packages" },
-    { id: "contact", label: "Contact Us" },
+    { id: "contact", label: "Contact" },
     { id: "about", label: "About Us" },
   ];
 
