@@ -72,6 +72,12 @@ function AIPhotoFinderPage() {
     addPhotos(event.target.files);
   }
 
+  function removePhoto(indexToRemove) {
+    setSelectedPhotos((currentPhotos) =>
+      currentPhotos.filter((photo, index) => index !== indexToRemove)
+    );
+  }
+
   return (
     <main className="ai-finder-page">
       <section className="ai-finder-header">
@@ -119,6 +125,25 @@ function AIPhotoFinderPage() {
             </label>
             <span>Supports JPG, PNG, HEIC - up to 100MB each</span>
           </div>
+
+          {selectedPhotos.length > 0 && (
+            <div className="ai-selected-photos">
+              <h3>Selected Photos ({selectedPhotos.length})</h3>
+              <div className="ai-photo-grid">
+                {selectedPhotos.slice(0, 16).map((photo, index) => (
+                  <div className="ai-photo-thumb" key={`${photo.name}-${index}`}>
+                    <img src={URL.createObjectURL(photo)} alt="" />
+                    <button type="button" onClick={() => removePhoto(index)} aria-label="Remove photo">
+                      x
+                    </button>
+                  </div>
+                ))}
+                {selectedPhotos.length > 16 && (
+                  <div className="ai-photo-more">+{selectedPhotos.length - 16}</div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </section>
 
