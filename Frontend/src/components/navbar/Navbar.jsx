@@ -14,10 +14,9 @@ function Navbar({
   const pages = [
     { id: "home", label: "Home" },
     ...(isLoggedIn ? [{ id: "dashboard", label: "Studio Home" }] : []),
-    { id: "finder", label: "AI Photo Finder" },
+    { id: "finder", label: "AI Finder" },
     { id: "packages", label: "Packages" },
-    { id: "contact", label: "Contact Us" },
-    { id: "about", label: "About Us" },
+    { id: "contact", label: "Contact" },
   ];
 
   function getInitials(name) {
