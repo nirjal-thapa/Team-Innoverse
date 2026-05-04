@@ -38,12 +38,14 @@ function Navbar({
   return (
     <header className="navbar">
       <div className="navbar-brand">
-        <img
-          src="src/assets/photofly-logo.png"
-          alt="PhotoFly logo"
-          className="logo-image"
-        />
-        <span className="studio-badge">by Innoverse Studio</span>
+        <div className="brand-lockup">
+          <img
+            src="src/assets/photofly-logo.png"
+            alt="PhotoFly logo"
+            className="logo-image"
+          />
+          <span className="studio-sub-label">by Innoverse Studio</span>
+        </div>
       </div>
 
       <nav className="nav-links" aria-label="Main navigation">
