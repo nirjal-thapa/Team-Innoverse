@@ -1,14 +1,54 @@
 const router = require("express").Router();
+const fs = require("fs");
+const path = require("path");
+const multer = require("multer");
 const Photo = require("../models/Photo");
 const Event = require("../models/Event");
 const { auth, requireRole } = require("../middleware/auth");
 const { uploadPhoto, cloudinary } = require("../config/cloudinary");
+const runtime = require("../config/runtime");
+const localSeed = require("../data/localSeed");
 const axios = require("axios");
+
+const localUploadDir = path.join(__dirname, "../../uploads/photos");
+fs.mkdirSync(localUploadDir, { recursive: true });
+
+const localUpload = multer({
+  storage: multer.diskStorage({
+    destination: (req, file, cb) => cb(null, localUploadDir),
+    filename: (req, file, cb) => {
+      const safeName = file.originalname.replace(/[^a-z0-9._-]/gi, "-").toLowerCase();
+      cb(null, `${Date.now()}-${Math.random().toString(36).slice(2, 8)}-${safeName}`);
+    },
+  }),
+  fileFilter: (req, file, cb) => {
+    if (!/^image\/(jpeg|png|webp|gif)$/.test(file.mimetype)) {
+      return cb(new Error("Only image files are allowed"));
+    }
+    cb(null, true);
+  },
+  limits: { fileSize: 20 * 1024 * 1024, files: 100 },
+});
+
+function runPhotoUpload(req, res, next) {
+  const uploader = runtime.useLocalSeed ? localUpload : uploadPhoto;
+  uploader.array("photos", 100)(req, res, next);
+}
 
 // GET /api/photos?eventId=xxx
 router.get("/", auth, async (req, res) => {
   try {
     const { eventId, page = 1, limit = 50 } = req.query;
+
+    if (runtime.useLocalSeed) {
+      const photos = localSeed.listPhotosForEvent(eventId);
+      return res.json({
+        photos: photos.slice((page - 1) * limit, (page - 1) * limit + parseInt(limit)),
+        total: photos.length,
+        page: parseInt(page),
+      });
+    }
+
     const filter = eventId ? { eventId } : {};
     const photos = await Photo.find(filter)
       .select("-faces.embedding") // don't send embeddings to client
@@ -23,10 +63,21 @@ router.get("/", auth, async (req, res) => {
 });
 
 // POST /api/photos/upload — bulk upload
-router.post("/upload", auth, requireRole("photographer", "admin"), uploadPhoto.array("photos", 100), async (req, res) => {
+router.post("/upload", auth, requireRole("photographer", "admin"), runPhotoUpload, async (req, res) => {
   try {
     const { eventId } = req.body;
     if (!eventId) return res.status(400).json({ message: "eventId required" });
+
+    if (runtime.useLocalSeed) {
+      const uploadedFiles = (req.files || []).map((file) => ({
+        url: `/uploads/photos/${file.filename}`,
+        thumbnailUrl: `/uploads/photos/${file.filename}`,
+        publicId: file.filename,
+      }));
+      const photos = localSeed.addPhotos(eventId, req.user, uploadedFiles);
+      if (!photos) return res.status(404).json({ message: "Event not found" });
+      return res.status(201).json({ photos, count: photos.length });
+    }
 
     const event = await Event.findById(eventId);
     if (!event) return res.status(404).json({ message: "Event not found" });
@@ -90,6 +141,15 @@ router.post("/index-callback", async (req, res) => {
 // DELETE /api/photos/:id
 router.delete("/:id", auth, requireRole("photographer", "admin"), async (req, res) => {
   try {
+    if (runtime.useLocalSeed) {
+      const photo = localSeed.deletePhoto(req.params.id, req.user);
+      if (!photo) return res.status(404).json({ message: "Photo not found" });
+      if (photo.publicId) {
+        fs.rm(path.join(localUploadDir, photo.publicId), { force: true }, () => {});
+      }
+      return res.json({ message: "Photo deleted" });
+    }
+
     const photo = await Photo.findByIdAndDelete(req.params.id);
     if (!photo) return res.status(404).json({ message: "Photo not found" });
     if (photo.publicId) await cloudinary.uploader.destroy(photo.publicId);

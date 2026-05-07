@@ -88,6 +88,8 @@ const events = [
   },
 ];
 
+const photos = [];
+
 function cleanUser(user) {
   if (!user) return null;
   const { password, ...safeUser } = user;
@@ -97,6 +99,11 @@ function cleanUser(user) {
 function cleanEvent(event) {
   if (!event) return null;
   return { ...event };
+}
+
+function cleanPhoto(photo) {
+  if (!photo) return null;
+  return { ...photo };
 }
 
 function createCode(name) {
@@ -204,10 +211,68 @@ function deleteEvent(id, user) {
   return true;
 }
 
+function listPhotosForEvent(eventId) {
+  return photos
+    .filter((photo) => !eventId || photo.eventId === eventId)
+    .slice()
+    .sort((left, right) => new Date(right.createdAt) - new Date(left.createdAt))
+    .map(cleanPhoto);
+}
+
+function addPhotos(eventId, user, uploadedFiles) {
+  const event = events.find((item) => item._id === eventId);
+  if (!event) return null;
+  if (user.role !== "admin" && event.photographerId !== user._id) return null;
+
+  const now = new Date();
+  const createdPhotos = uploadedFiles.map((file) => {
+    const photo = {
+      _id: randomUUID(),
+      eventId,
+      url: file.url,
+      publicId: file.publicId,
+      thumbnailUrl: file.thumbnailUrl || file.url,
+      width: file.width,
+      height: file.height,
+      facesCount: 0,
+      faces: [],
+      indexed: false,
+      tags: ["local-upload"],
+      uploadedBy: user._id,
+      createdAt: now,
+      updatedAt: now,
+    };
+    photos.push(photo);
+    return cleanPhoto(photo);
+  });
+
+  event.photoCount = (Number(event.photoCount) || 0) + createdPhotos.length;
+  event.updatedAt = now;
+  return createdPhotos;
+}
+
+function deletePhoto(photoId, user) {
+  const index = photos.findIndex((photo) => photo._id === photoId);
+  if (index === -1) return null;
+
+  const photo = photos[index];
+  const event = events.find((item) => item._id === photo.eventId);
+  if (event && user.role !== "admin" && event.photographerId !== user._id) return null;
+
+  photos.splice(index, 1);
+  if (event) {
+    event.photoCount = Math.max(0, (Number(event.photoCount) || 0) - 1);
+    event.updatedAt = new Date();
+  }
+  return cleanPhoto(photo);
+}
+
 module.exports = {
   users,
   events,
+  photos,
   cleanUser,
+  cleanPhoto,
   createUser,
   findUserByEmail,
   findUserById,
@@ -218,4 +283,7 @@ module.exports = {
   createEvent,
   updateEvent,
   deleteEvent,
+  listPhotosForEvent,
+  addPhotos,
+  deletePhoto,
 };
