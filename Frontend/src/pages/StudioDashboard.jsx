@@ -96,6 +96,9 @@ function StudioDashboard({ user, authToken = "", onChangePage }) {
   const [sharingEvent, setSharingEvent] = React.useState(null);
   const [copyMessage, setCopyMessage] = React.useState("");
   const [isSyncing, setIsSyncing] = React.useState(false);
+  const [dataMode, setDataMode] = React.useState(authToken ? "syncing" : "local");
+  const [searchTerm, setSearchTerm] = React.useState("");
+  const [statusFilter, setStatusFilter] = React.useState("All");
 
   React.useEffect(() => {
     if (!authToken) {
@@ -109,10 +112,14 @@ function StudioDashboard({ user, authToken = "", onChangePage }) {
       .then((data) => {
         if (isActive) {
           setEvents((data.events || []).map(eventFromApi));
+          setDataMode("backend");
         }
       })
       .catch((error) => {
         console.error(error.message);
+        if (isActive) {
+          setDataMode("local");
+        }
       })
       .finally(() => {
         if (isActive) {
@@ -132,8 +139,18 @@ function StudioDashboard({ user, authToken = "", onChangePage }) {
   const totalEvents = events.length;
   const activeEvents = events.filter((event) => event.progress < 100).length;
   const totalPhotos = events.reduce((sum, event) => sum + event.photoCount, 0);
-  const storageUsed = "47.2 GB";
+  const readyEvents = events.filter((event) => event.progress >= 100).length;
+  const avgProgress = totalEvents
+    ? Math.round(events.reduce((sum, event) => sum + event.progress, 0) / totalEvents)
+    : 0;
+  const storageUsed = `${Math.max(1, (totalPhotos * 0.003).toFixed(1))} GB`;
   const isEditingEvent = Boolean(editingEventId);
+  const filteredEvents = events.filter((event) => {
+    const matchesSearch = event.name.toLowerCase().includes(searchTerm.toLowerCase())
+      || event.shareCode.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = statusFilter === "All" || event.status === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
   const statCards = [
     {
       label: "Total Events",
@@ -165,6 +182,18 @@ function StudioDashboard({ user, authToken = "", onChangePage }) {
         </svg>
       ),
       tone: "green",
+    },
+    {
+      label: "Ready Galleries",
+      value: readyEvents,
+      note: `${avgProgress}% avg progress`,
+      icon: (
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M20 6 9 17l-5-5" />
+          <path d="M15 6h5v5" />
+        </svg>
+      ),
+      tone: "purple",
     },
     {
       label: "Total Photos Uploaded",
@@ -283,6 +312,8 @@ function StudioDashboard({ user, authToken = "", onChangePage }) {
     };
 
     if (authToken) {
+      let savedToBackend = false;
+
       try {
         setIsSyncing(true);
         const savedEvent = isEditingEvent
@@ -298,12 +329,17 @@ function StudioDashboard({ user, authToken = "", onChangePage }) {
             : [syncedEvent, ...currentEvents]
         );
         closeEventForm();
+        savedToBackend = true;
       } catch (error) {
-        alert(error.message);
+        console.error(error.message);
+        setDataMode("local");
       } finally {
         setIsSyncing(false);
       }
-      return;
+
+      if (savedToBackend) {
+        return;
+      }
     }
 
     setEvents((currentEvents) =>
@@ -313,7 +349,34 @@ function StudioDashboard({ user, authToken = "", onChangePage }) {
           )
         : [eventToSave, ...currentEvents]
     );
+    setDataMode("local");
     closeEventForm();
+  }
+
+  function deleteEvent(eventId) {
+    const eventToDelete = events.find((event) => event.id === eventId);
+    if (!eventToDelete) {
+      return;
+    }
+
+    if (!window.confirm(`Delete ${eventToDelete.name}?`)) {
+      return;
+    }
+
+    setEvents((currentEvents) => currentEvents.filter((event) => event.id !== eventId));
+    setDataMode("local");
+  }
+
+  function resetLocalEvents() {
+    if (!window.confirm("Reset dashboard to local seed events?")) {
+      return;
+    }
+
+    setEvents(initialEvents);
+    setSearchTerm("");
+    setStatusFilter("All");
+    localStorage.setItem(eventsStorageKey, JSON.stringify(initialEvents));
+    setDataMode("local");
   }
 
   function openShareEvent(event) {
@@ -336,11 +399,17 @@ function StudioDashboard({ user, authToken = "", onChangePage }) {
       <section className="dashboard-header">
         <div>
           <span className="section-badge">Studio Control</span>
-          <h1>Studio Home</h1>
+          <h1>Studio Dashboard</h1>
           <p>
             Welcome back, {user?.fullName || "Studio Admin"}. Manage events,
             AI processing, and gallery delivery from one place.
           </p>
+          <div className="dashboard-mode-row">
+            <span className={`dashboard-mode-pill ${dataMode}`}>
+              {dataMode === "backend" ? "Backend synced" : dataMode === "syncing" ? "Syncing data" : "Local data mode"}
+            </span>
+            <button type="button" onClick={resetLocalEvents}>Reset local data</button>
+          </div>
         </div>
 
         <button className="dashboard-primary-button" type="button" onClick={openNewEventForm} disabled={isSyncing}>
@@ -367,8 +436,30 @@ function StudioDashboard({ user, authToken = "", onChangePage }) {
         ))}
       </section>
 
+      <section className="dashboard-toolbar" aria-label="Dashboard tools">
+        <label className="dashboard-search-field">
+          <span>Search events</span>
+          <input
+            type="search"
+            value={searchTerm}
+            onChange={(event) => setSearchTerm(event.target.value)}
+            placeholder="Event name or gallery code"
+          />
+        </label>
+
+        <label className="dashboard-filter-field">
+          <span>Status</span>
+          <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}>
+            <option>All</option>
+            <option>Upload pending</option>
+            <option>AI sorting</option>
+            <option>Ready to share</option>
+          </select>
+        </label>
+      </section>
+
       <section className="dashboard-event-list" aria-label="Event list">
-        {events.map((event) => (
+        {filteredEvents.map((event) => (
           <article className="dashboard-event-card" key={event.id}>
             <img src={event.cover} alt="" />
 
@@ -379,6 +470,7 @@ function StudioDashboard({ user, authToken = "", onChangePage }) {
                   <p>
                     {event.date} | {event.photoCount.toLocaleString()} photos
                   </p>
+                  <small className="event-code-line">Gallery code: {event.shareCode}</small>
                 </div>
                 <span className="event-status-pill">{event.status}</span>
               </div>
@@ -401,10 +493,19 @@ function StudioDashboard({ user, authToken = "", onChangePage }) {
                 <button type="button" onClick={() => openEditEventForm(event)}>
                   Edit Event
                 </button>
+                <button type="button" onClick={() => deleteEvent(event.id)}>
+                  Delete
+                </button>
               </div>
             </div>
           </article>
         ))}
+        {!filteredEvents.length && (
+          <div className="dashboard-empty-state">
+            <strong>No events found</strong>
+            <p>Try another search or reset local data to restore sample events.</p>
+          </div>
+        )}
       </section>
 
       <section className="dashboard-insight">
