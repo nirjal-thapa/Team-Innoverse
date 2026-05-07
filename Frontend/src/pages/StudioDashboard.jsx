@@ -1,4 +1,4 @@
-function StudioDashboard({ user, onChangePage }) {
+function StudioDashboard({ user, authToken = "", onChangePage }) {
   const defaultCover =
     "https://images.pexels.com/photos/3812639/pexels-photo-3812639.jpeg?auto=compress&cs=tinysrgb&w=900&h=620&fit=crop";
   const eventsStorageKey = `photoFly_events_${user?.email || "guest"}`;
@@ -48,6 +48,44 @@ function StudioDashboard({ user, onChangePage }) {
     cover: "",
   };
 
+  function formatDisplayDate(dateValue) {
+    const parsedDate = new Date(dateValue);
+    if (Number.isNaN(parsedDate.getTime())) {
+      return dateValue || "";
+    }
+
+    return parsedDate.toLocaleDateString("en-US", {
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+    });
+  }
+
+  function eventFromApi(apiEvent) {
+    return {
+      id: apiEvent._id || apiEvent.id,
+      name: apiEvent.name,
+      date: formatDisplayDate(apiEvent.date),
+      photoCount: Number(apiEvent.photoCount) || 0,
+      status: apiEvent.status || (apiEvent.progress >= 100 ? "Ready to share" : "Upload pending"),
+      progress: Math.min(100, Math.max(0, Number(apiEvent.progress) || 0)),
+      shareCode: apiEvent.code || apiEvent.shareCode || "",
+      cover: apiEvent.coverImage || apiEvent.cover || defaultCover,
+    };
+  }
+
+  function eventToApiPayload(event) {
+    return {
+      name: event.name,
+      date: event.date,
+      photoCount: Number(event.photoCount) || 0,
+      status: event.status,
+      progress: Math.min(100, Math.max(0, Number(event.progress) || 0)),
+      code: event.shareCode,
+      coverImage: event.cover,
+    };
+  }
+
   const [events, setEvents] = React.useState(() => {
     const savedEvents = localStorage.getItem(eventsStorageKey);
     return savedEvents ? JSON.parse(savedEvents) : initialEvents;
@@ -57,6 +95,35 @@ function StudioDashboard({ user, onChangePage }) {
   const [editingEventId, setEditingEventId] = React.useState(null);
   const [sharingEvent, setSharingEvent] = React.useState(null);
   const [copyMessage, setCopyMessage] = React.useState("");
+  const [isSyncing, setIsSyncing] = React.useState(false);
+
+  React.useEffect(() => {
+    if (!authToken) {
+      return;
+    }
+
+    let isActive = true;
+    setIsSyncing(true);
+
+    window.PhotoFlyApi.getEvents(authToken)
+      .then((data) => {
+        if (isActive) {
+          setEvents((data.events || []).map(eventFromApi));
+        }
+      })
+      .catch((error) => {
+        console.error(error.message);
+      })
+      .finally(() => {
+        if (isActive) {
+          setIsSyncing(false);
+        }
+      });
+
+    return () => {
+      isActive = false;
+    };
+  }, [authToken]);
 
   React.useEffect(() => {
     localStorage.setItem(eventsStorageKey, JSON.stringify(events));
@@ -198,7 +265,7 @@ function StudioDashboard({ user, onChangePage }) {
     return Object.keys(nextErrors).length === 0;
   }
 
-  function saveEvent(event) {
+  async function saveEvent(event) {
     event.preventDefault();
 
     if (!validateEventForm()) {
@@ -214,6 +281,30 @@ function StudioDashboard({ user, onChangePage }) {
       photoCount: Number(eventForm.photoCount) || 0,
       progress: Math.min(100, Math.max(0, Number(eventForm.progress) || 0)),
     };
+
+    if (authToken) {
+      try {
+        setIsSyncing(true);
+        const savedEvent = isEditingEvent
+          ? await window.PhotoFlyApi.updateEvent(authToken, editingEventId, eventToApiPayload(eventToSave))
+          : await window.PhotoFlyApi.createEvent(authToken, eventToApiPayload(eventToSave));
+        const syncedEvent = eventFromApi(savedEvent);
+
+        setEvents((currentEvents) =>
+          isEditingEvent
+            ? currentEvents.map((currentEvent) =>
+                currentEvent.id === editingEventId ? syncedEvent : currentEvent
+              )
+            : [syncedEvent, ...currentEvents]
+        );
+        closeEventForm();
+      } catch (error) {
+        alert(error.message);
+      } finally {
+        setIsSyncing(false);
+      }
+      return;
+    }
 
     setEvents((currentEvents) =>
       isEditingEvent
@@ -252,7 +343,7 @@ function StudioDashboard({ user, onChangePage }) {
           </p>
         </div>
 
-        <button className="dashboard-primary-button" type="button" onClick={openNewEventForm}>
+        <button className="dashboard-primary-button" type="button" onClick={openNewEventForm} disabled={isSyncing}>
           <span aria-hidden="true">+</span>
           New Event + Upload
         </button>
@@ -416,7 +507,7 @@ function StudioDashboard({ user, onChangePage }) {
                   Cancel
                 </button>
                 <button className="auth-submit-button" type="submit">
-                  {isEditingEvent ? "Save Event" : "Add Event"}
+                  {isSyncing ? "Saving..." : isEditingEvent ? "Save Event" : "Add Event"}
                 </button>
               </div>
             </form>
