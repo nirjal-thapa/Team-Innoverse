@@ -1,7 +1,8 @@
-function StudioDashboard({ user, onChangePage }) {
+function StudioDashboard({ user, authToken = "", onChangePage }) {
   const defaultCover =
     "https://images.pexels.com/photos/3812639/pexels-photo-3812639.jpeg?auto=compress&cs=tinysrgb&w=900&h=620&fit=crop";
   const eventsStorageKey = `photoFly_events_${user?.email || "guest"}`;
+  const photosStorageKey = `photoFly_uploadedPhotos_${user?.email || "guest"}`;
   const initialEvents = [
     {
       id: "wedding-gala-2026",
@@ -48,25 +49,143 @@ function StudioDashboard({ user, onChangePage }) {
     cover: "",
   };
 
+  function formatDisplayDate(dateValue) {
+    const parsedDate = new Date(dateValue);
+    if (Number.isNaN(parsedDate.getTime())) {
+      return dateValue || "";
+    }
+
+    return parsedDate.toLocaleDateString("en-US", {
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+    });
+  }
+
+  function eventFromApi(apiEvent) {
+    return {
+      id: apiEvent._id || apiEvent.id,
+      name: apiEvent.name,
+      date: formatDisplayDate(apiEvent.date),
+      photoCount: Number(apiEvent.photoCount) || 0,
+      status: apiEvent.status || (apiEvent.progress >= 100 ? "Ready to share" : "Upload pending"),
+      progress: Math.min(100, Math.max(0, Number(apiEvent.progress) || 0)),
+      shareCode: apiEvent.code || apiEvent.shareCode || "",
+      cover: apiEvent.coverImage || apiEvent.cover || defaultCover,
+    };
+  }
+
+  function eventToApiPayload(event) {
+    return {
+      name: event.name,
+      date: event.date,
+      photoCount: Number(event.photoCount) || 0,
+      status: event.status,
+      progress: Math.min(100, Math.max(0, Number(event.progress) || 0)),
+      code: event.shareCode,
+      coverImage: event.cover,
+    };
+  }
+
+  function normalizePhotoUrl(url) {
+    if (!url) {
+      return defaultCover;
+    }
+
+    if (url.startsWith("http") || url.startsWith("data:") || url.startsWith("blob:")) {
+      return url;
+    }
+
+    return `${window.PhotoFlyApi.baseUrl}${url}`;
+  }
+
+  function readFileAsDataUrl(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
   const [events, setEvents] = React.useState(() => {
     const savedEvents = localStorage.getItem(eventsStorageKey);
     return savedEvents ? JSON.parse(savedEvents) : initialEvents;
+  });
+  const [localPhotosByEvent, setLocalPhotosByEvent] = React.useState(() => {
+    const savedPhotos = localStorage.getItem(photosStorageKey);
+    return savedPhotos ? JSON.parse(savedPhotos) : {};
   });
   const [eventForm, setEventForm] = React.useState(emptyForm);
   const [formErrors, setFormErrors] = React.useState({});
   const [editingEventId, setEditingEventId] = React.useState(null);
   const [sharingEvent, setSharingEvent] = React.useState(null);
   const [copyMessage, setCopyMessage] = React.useState("");
+  const [isSyncing, setIsSyncing] = React.useState(false);
+  const [dataMode, setDataMode] = React.useState(authToken ? "syncing" : "local");
+  const [searchTerm, setSearchTerm] = React.useState("");
+  const [statusFilter, setStatusFilter] = React.useState("All");
+  const [uploadEvent, setUploadEvent] = React.useState(null);
+  const [selectedFiles, setSelectedFiles] = React.useState([]);
+  const [eventPhotos, setEventPhotos] = React.useState([]);
+  const [uploadMessage, setUploadMessage] = React.useState("");
+  const [isUploading, setIsUploading] = React.useState(false);
+
+  React.useEffect(() => {
+    if (!authToken) {
+      return;
+    }
+
+    let isActive = true;
+    setIsSyncing(true);
+
+    window.PhotoFlyApi.getEvents(authToken)
+      .then((data) => {
+        if (isActive) {
+          setEvents((data.events || []).map(eventFromApi));
+          setDataMode("backend");
+        }
+      })
+      .catch((error) => {
+        console.error(error.message);
+        if (isActive) {
+          setDataMode("local");
+        }
+      })
+      .finally(() => {
+        if (isActive) {
+          setIsSyncing(false);
+        }
+      });
+
+    return () => {
+      isActive = false;
+    };
+  }, [authToken]);
 
   React.useEffect(() => {
     localStorage.setItem(eventsStorageKey, JSON.stringify(events));
   }, [events, eventsStorageKey]);
 
+  React.useEffect(() => {
+    localStorage.setItem(photosStorageKey, JSON.stringify(localPhotosByEvent));
+  }, [localPhotosByEvent, photosStorageKey]);
+
   const totalEvents = events.length;
   const activeEvents = events.filter((event) => event.progress < 100).length;
   const totalPhotos = events.reduce((sum, event) => sum + event.photoCount, 0);
-  const storageUsed = "47.2 GB";
+  const readyEvents = events.filter((event) => event.progress >= 100).length;
+  const avgProgress = totalEvents
+    ? Math.round(events.reduce((sum, event) => sum + event.progress, 0) / totalEvents)
+    : 0;
+  const storageUsed = `${Math.max(1, (totalPhotos * 0.003).toFixed(1))} GB`;
   const isEditingEvent = Boolean(editingEventId);
+  const filteredEvents = events.filter((event) => {
+    const matchesSearch = event.name.toLowerCase().includes(searchTerm.toLowerCase())
+      || event.shareCode.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = statusFilter === "All" || event.status === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
   const statCards = [
     {
       label: "Total Events",
@@ -98,6 +217,18 @@ function StudioDashboard({ user, onChangePage }) {
         </svg>
       ),
       tone: "green",
+    },
+    {
+      label: "Ready Galleries",
+      value: readyEvents,
+      note: `${avgProgress}% avg progress`,
+      icon: (
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M20 6 9 17l-5-5" />
+          <path d="M15 6h5v5" />
+        </svg>
+      ),
+      tone: "purple",
     },
     {
       label: "Total Photos Uploaded",
@@ -198,7 +329,7 @@ function StudioDashboard({ user, onChangePage }) {
     return Object.keys(nextErrors).length === 0;
   }
 
-  function saveEvent(event) {
+  async function saveEvent(event) {
     event.preventDefault();
 
     if (!validateEventForm()) {
@@ -215,6 +346,37 @@ function StudioDashboard({ user, onChangePage }) {
       progress: Math.min(100, Math.max(0, Number(eventForm.progress) || 0)),
     };
 
+    if (authToken) {
+      let savedToBackend = false;
+
+      try {
+        setIsSyncing(true);
+        const savedEvent = isEditingEvent
+          ? await window.PhotoFlyApi.updateEvent(authToken, editingEventId, eventToApiPayload(eventToSave))
+          : await window.PhotoFlyApi.createEvent(authToken, eventToApiPayload(eventToSave));
+        const syncedEvent = eventFromApi(savedEvent);
+
+        setEvents((currentEvents) =>
+          isEditingEvent
+            ? currentEvents.map((currentEvent) =>
+                currentEvent.id === editingEventId ? syncedEvent : currentEvent
+              )
+            : [syncedEvent, ...currentEvents]
+        );
+        closeEventForm();
+        savedToBackend = true;
+      } catch (error) {
+        console.error(error.message);
+        setDataMode("local");
+      } finally {
+        setIsSyncing(false);
+      }
+
+      if (savedToBackend) {
+        return;
+      }
+    }
+
     setEvents((currentEvents) =>
       isEditingEvent
         ? currentEvents.map((currentEvent) =>
@@ -222,7 +384,34 @@ function StudioDashboard({ user, onChangePage }) {
           )
         : [eventToSave, ...currentEvents]
     );
+    setDataMode("local");
     closeEventForm();
+  }
+
+  function deleteEvent(eventId) {
+    const eventToDelete = events.find((event) => event.id === eventId);
+    if (!eventToDelete) {
+      return;
+    }
+
+    if (!window.confirm(`Delete ${eventToDelete.name}?`)) {
+      return;
+    }
+
+    setEvents((currentEvents) => currentEvents.filter((event) => event.id !== eventId));
+    setDataMode("local");
+  }
+
+  function resetLocalEvents() {
+    if (!window.confirm("Reset dashboard to local seed events?")) {
+      return;
+    }
+
+    setEvents(initialEvents);
+    setSearchTerm("");
+    setStatusFilter("All");
+    localStorage.setItem(eventsStorageKey, JSON.stringify(initialEvents));
+    setDataMode("local");
   }
 
   function openShareEvent(event) {
@@ -240,19 +429,190 @@ function StudioDashboard({ user, onChangePage }) {
     }
   }
 
+  function updateEventPhotoCount(eventId, change) {
+    setEvents((currentEvents) =>
+      currentEvents.map((event) =>
+        event.id === eventId
+          ? { ...event, photoCount: Math.max(0, Number(event.photoCount || 0) + change) }
+          : event
+      )
+    );
+  }
+
+  function openUploadEvent(event) {
+    setUploadEvent(event);
+    setSelectedFiles([]);
+    setUploadMessage("");
+    setEventPhotos(localPhotosByEvent[event.id] || []);
+
+    if (!authToken) {
+      return;
+    }
+
+    setIsUploading(true);
+    window.PhotoFlyApi.getPhotos(authToken, event.id)
+      .then((data) => {
+        setEventPhotos((data.photos || []).map((photo) => ({
+          id: photo._id || photo.id,
+          name: photo.publicId || "Uploaded photo",
+          url: normalizePhotoUrl(photo.thumbnailUrl || photo.url),
+          fullUrl: normalizePhotoUrl(photo.url),
+          isLocal: false,
+        })));
+        setDataMode("backend");
+      })
+      .catch((error) => {
+        console.error(error.message);
+        setDataMode("local");
+      })
+      .finally(() => setIsUploading(false));
+  }
+
+  function closeUploadEvent() {
+    selectedFiles.forEach((item) => URL.revokeObjectURL(item.previewUrl));
+    setUploadEvent(null);
+    setSelectedFiles([]);
+    setEventPhotos([]);
+    setUploadMessage("");
+  }
+
+  function handleUploadFileChange(event) {
+    const files = Array.from(event.target.files || []);
+    const imageFiles = files.filter((file) => file.type.startsWith("image/"));
+
+    selectedFiles.forEach((item) => URL.revokeObjectURL(item.previewUrl));
+    setSelectedFiles(imageFiles.map((file) => ({
+      file,
+      name: file.name,
+      size: file.size,
+      previewUrl: URL.createObjectURL(file),
+    })));
+    setUploadMessage(imageFiles.length === files.length ? "" : "Some non-image files were ignored.");
+    event.target.value = "";
+  }
+
+  function removeSelectedFile(fileName) {
+    setSelectedFiles((currentFiles) => {
+      const fileToRemove = currentFiles.find((item) => item.name === fileName);
+      if (fileToRemove) {
+        URL.revokeObjectURL(fileToRemove.previewUrl);
+      }
+      return currentFiles.filter((item) => item.name !== fileName);
+    });
+  }
+
+  async function saveUploadsLocally() {
+    const localPhotos = await Promise.all(selectedFiles.map(async (item) => ({
+      id: `local-photo-${Date.now()}-${Math.random()}`,
+      name: item.name,
+      url: await readFileAsDataUrl(item.file),
+      fullUrl: "",
+      isLocal: true,
+      createdAt: new Date().toISOString(),
+    })));
+
+    const nextPhotos = [...localPhotos, ...(localPhotosByEvent[uploadEvent.id] || [])];
+    setLocalPhotosByEvent((currentPhotos) => ({
+      ...currentPhotos,
+      [uploadEvent.id]: nextPhotos,
+    }));
+    setEventPhotos((currentPhotos) => [...localPhotos, ...currentPhotos]);
+    updateEventPhotoCount(uploadEvent.id, localPhotos.length);
+    setDataMode("local");
+    setUploadMessage(`${localPhotos.length} photo${localPhotos.length === 1 ? "" : "s"} saved locally.`);
+  }
+
+  async function uploadSelectedPhotos() {
+    if (!uploadEvent || !selectedFiles.length) {
+      setUploadMessage("Choose at least one image to upload.");
+      return;
+    }
+
+    setIsUploading(true);
+    setUploadMessage("");
+
+    if (authToken) {
+      try {
+        const result = await window.PhotoFlyApi.uploadPhotos(
+          authToken,
+          uploadEvent.id,
+          selectedFiles.map((item) => item.file)
+        );
+        const uploadedPhotos = (result.photos || []).map((photo) => ({
+          id: photo._id || photo.id,
+          name: photo.publicId || "Uploaded photo",
+          url: normalizePhotoUrl(photo.thumbnailUrl || photo.url),
+          fullUrl: normalizePhotoUrl(photo.url),
+          isLocal: false,
+        }));
+
+        setEventPhotos((currentPhotos) => [...uploadedPhotos, ...currentPhotos]);
+        updateEventPhotoCount(uploadEvent.id, uploadedPhotos.length);
+        setDataMode("backend");
+        setUploadMessage(`${uploadedPhotos.length} photo${uploadedPhotos.length === 1 ? "" : "s"} uploaded.`);
+        selectedFiles.forEach((item) => URL.revokeObjectURL(item.previewUrl));
+        setSelectedFiles([]);
+        setIsUploading(false);
+        return;
+      } catch (error) {
+        console.error(error.message);
+        setUploadMessage("Backend upload failed, saving photos locally.");
+      }
+    }
+
+    try {
+      await saveUploadsLocally();
+      selectedFiles.forEach((item) => URL.revokeObjectURL(item.previewUrl));
+      setSelectedFiles([]);
+    } catch (error) {
+      console.error(error.message);
+      setUploadMessage("Could not save these photos locally.");
+    } finally {
+      setIsUploading(false);
+    }
+  }
+
+  async function deleteUploadedPhoto(photo) {
+    if (!uploadEvent) {
+      return;
+    }
+
+    if (authToken && !photo.isLocal) {
+      try {
+        await window.PhotoFlyApi.deletePhoto(authToken, photo.id);
+      } catch (error) {
+        console.error(error.message);
+        setUploadMessage("Backend delete failed, removing it from this view.");
+      }
+    }
+
+    setEventPhotos((currentPhotos) => currentPhotos.filter((item) => item.id !== photo.id));
+    setLocalPhotosByEvent((currentPhotos) => ({
+      ...currentPhotos,
+      [uploadEvent.id]: (currentPhotos[uploadEvent.id] || []).filter((item) => item.id !== photo.id),
+    }));
+    updateEventPhotoCount(uploadEvent.id, -1);
+  }
+
   return (
     <main className="studio-dashboard">
       <section className="dashboard-header">
         <div>
           <span className="section-badge">Studio Control</span>
-          <h1>Studio Home</h1>
+          <h1>Studio Dashboard</h1>
           <p>
             Welcome back, {user?.fullName || "Studio Admin"}. Manage events,
             AI processing, and gallery delivery from one place.
           </p>
+          <div className="dashboard-mode-row">
+            <span className={`dashboard-mode-pill ${dataMode}`}>
+              {dataMode === "backend" ? "Backend synced" : dataMode === "syncing" ? "Syncing data" : "Local data mode"}
+            </span>
+            <button type="button" onClick={resetLocalEvents}>Reset local data</button>
+          </div>
         </div>
 
-        <button className="dashboard-primary-button" type="button" onClick={openNewEventForm}>
+        <button className="dashboard-primary-button" type="button" onClick={openNewEventForm} disabled={isSyncing}>
           <span aria-hidden="true">+</span>
           New Event + Upload
         </button>
@@ -276,8 +636,30 @@ function StudioDashboard({ user, onChangePage }) {
         ))}
       </section>
 
+      <section className="dashboard-toolbar" aria-label="Dashboard tools">
+        <label className="dashboard-search-field">
+          <span>Search events</span>
+          <input
+            type="search"
+            value={searchTerm}
+            onChange={(event) => setSearchTerm(event.target.value)}
+            placeholder="Event name or gallery code"
+          />
+        </label>
+
+        <label className="dashboard-filter-field">
+          <span>Status</span>
+          <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}>
+            <option>All</option>
+            <option>Upload pending</option>
+            <option>AI sorting</option>
+            <option>Ready to share</option>
+          </select>
+        </label>
+      </section>
+
       <section className="dashboard-event-list" aria-label="Event list">
-        {events.map((event) => (
+        {filteredEvents.map((event) => (
           <article className="dashboard-event-card" key={event.id}>
             <img src={event.cover} alt="" />
 
@@ -288,6 +670,7 @@ function StudioDashboard({ user, onChangePage }) {
                   <p>
                     {event.date} | {event.photoCount.toLocaleString()} photos
                   </p>
+                  <small className="event-code-line">Gallery code: {event.shareCode}</small>
                 </div>
                 <span className="event-status-pill">{event.status}</span>
               </div>
@@ -304,16 +687,28 @@ function StudioDashboard({ user, onChangePage }) {
                 <button type="button" onClick={() => onChangePage("finder")}>
                   View Event Page
                 </button>
+                <button type="button" onClick={() => openUploadEvent(event)}>
+                  Upload Photos
+                </button>
                 <button type="button" onClick={() => openShareEvent(event)}>
                   Share Gallery
                 </button>
                 <button type="button" onClick={() => openEditEventForm(event)}>
                   Edit Event
                 </button>
+                <button type="button" onClick={() => deleteEvent(event.id)}>
+                  Delete
+                </button>
               </div>
             </div>
           </article>
         ))}
+        {!filteredEvents.length && (
+          <div className="dashboard-empty-state">
+            <strong>No events found</strong>
+            <p>Try another search or reset local data to restore sample events.</p>
+          </div>
+        )}
       </section>
 
       <section className="dashboard-insight">
@@ -416,10 +811,101 @@ function StudioDashboard({ user, onChangePage }) {
                   Cancel
                 </button>
                 <button className="auth-submit-button" type="submit">
-                  {isEditingEvent ? "Save Event" : "Add Event"}
+                  {isSyncing ? "Saving..." : isEditingEvent ? "Save Event" : "Add Event"}
                 </button>
               </div>
             </form>
+          </section>
+        </div>
+      )}
+
+      {uploadEvent && (
+        <div className="auth-modal-backdrop" role="presentation">
+          <section className="auth-modal upload-modal" role="dialog" aria-modal="true" aria-labelledby="upload-title">
+            <button className="modal-close-button" type="button" onClick={closeUploadEvent} aria-label="Close upload dialog">
+              x
+            </button>
+
+            <div className="auth-modal-header">
+              <span className="auth-kicker">Image upload</span>
+              <h2 id="upload-title">{uploadEvent.name}</h2>
+              <p>Add event photos to the gallery. Images sync with backend when available, otherwise they stay in local data.</p>
+            </div>
+
+            <div className="upload-dropzone">
+              <input
+                id="event-photo-upload"
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={handleUploadFileChange}
+              />
+              <label htmlFor="event-photo-upload">
+                <strong>Choose images</strong>
+                <span>JPG, PNG, WEBP, or GIF up to 20MB each</span>
+              </label>
+            </div>
+
+            {selectedFiles.length > 0 && (
+              <section className="upload-preview-panel" aria-label="Selected photos">
+                <div className="upload-panel-header">
+                  <strong>{selectedFiles.length} selected</strong>
+                  <button type="button" onClick={() => {
+                    selectedFiles.forEach((item) => URL.revokeObjectURL(item.previewUrl));
+                    setSelectedFiles([]);
+                  }}>
+                    Clear
+                  </button>
+                </div>
+                <div className="upload-preview-grid">
+                  {selectedFiles.map((item) => (
+                    <article key={`${item.name}-${item.size}`}>
+                      <img src={item.previewUrl} alt="" />
+                      <button type="button" onClick={() => removeSelectedFile(item.name)} aria-label={`Remove ${item.name}`}>
+                        x
+                      </button>
+                      <span>{item.name}</span>
+                    </article>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            <div className="upload-action-row">
+              <button className="cancel-button" type="button" onClick={closeUploadEvent}>
+                Close
+              </button>
+              <button className="auth-submit-button" type="button" onClick={uploadSelectedPhotos} disabled={isUploading}>
+                {isUploading ? "Uploading..." : "Upload Photos"}
+              </button>
+            </div>
+
+            {uploadMessage && <small className="upload-message">{uploadMessage}</small>}
+
+            <section className="event-gallery-panel" aria-label="Uploaded event photos">
+              <div className="upload-panel-header">
+                <strong>Gallery photos</strong>
+                <span>{eventPhotos.length} photos</span>
+              </div>
+
+              {eventPhotos.length > 0 ? (
+                <div className="event-gallery-grid">
+                  {eventPhotos.map((photo) => (
+                    <article key={photo.id}>
+                      <img src={photo.url} alt={photo.name || ""} />
+                      <button type="button" onClick={() => deleteUploadedPhoto(photo)} aria-label="Delete uploaded photo">
+                        Delete
+                      </button>
+                    </article>
+                  ))}
+                </div>
+              ) : (
+                <div className="dashboard-empty-state compact">
+                  <strong>No photos yet</strong>
+                  <p>Upload a few images to start this event gallery.</p>
+                </div>
+              )}
+            </section>
           </section>
         </div>
       )}
