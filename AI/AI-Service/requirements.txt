@@ -1,0 +1,22 @@
+dlib==19.24.4
+face-recognition==1.3.0
+Pillow==10.3.0
+numpy==1.26.4
+tqdm==4.66.4
+ipywidgets==8.1.3
+ipython==8.25.0
+jupyter==1.0.0
+cmake==3.29.2
+wheel==0.43.0
+setuptools==69.5.0
+
+
+Create an environment foe this in python version 3.10.20
+Install the required packages using pip:
+pip install dlib face-recognition Pillow numpy tqdm ipywidgets ipython  cmake wheel setuptools
+
+or,
+in anaconda prompt do this :
+conda create -n face_env python=3.10
+conda activate face_env
+conda install -c conda-forge face_recognition 
