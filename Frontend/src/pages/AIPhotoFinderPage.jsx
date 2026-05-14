@@ -1,33 +1,221 @@
 function AIPhotoFinderPage() {
+  const [selectedPhotos, setSelectedPhotos] = React.useState([]);
+  const [uploadedPhotos, setUploadedPhotos] = React.useState([]);
+  const [isDragging, setIsDragging] = React.useState(false);
+  const [uploadMessage, setUploadMessage] = React.useState("");
+  const finderStats = [
+    {
+      label: "Total Photos Uploaded",
+      value: "15,680",
+      icon: (
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M4 5h16a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1Z" />
+          <path d="m4 16 4.4-4.4a2 2 0 0 1 2.8 0L16 16" />
+          <path d="m14 14 1.4-1.4a2 2 0 0 1 2.8 0L21 15.4" />
+          <path d="M8 9h.01" />
+        </svg>
+      ),
+      tone: "blue",
+    },
+    {
+      label: "Total Face Searches",
+      value: "342",
+      note: "+23% this week",
+      noteTone: "blue",
+      icon: (
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="12" r="8" />
+          <path d="M9 10h.01" />
+          <path d="M15 10h.01" />
+          <path d="M9 15c1.7 1.4 4.3 1.4 6 0" />
+        </svg>
+      ),
+      tone: "purple",
+    },
+    {
+      label: "Plan Status",
+      value: "Studio Pro",
+      note: "Renews April 15, 2026",
+      noteTone: "orange",
+      icon: (
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="m3 8 4 3 5-7 5 7 4-3-2 11H5L3 8Z" />
+          <path d="M5 19h14" />
+        </svg>
+      ),
+      tone: "amber",
+    },
+  ];
+
+  function addPhotos(fileList) {
+    const photos = Array.from(fileList).filter((file) => file.type.startsWith("image/"));
+
+    if (!photos.length) {
+      return;
+    }
+
+    setSelectedPhotos((currentPhotos) => [...currentPhotos, ...photos]);
+    setUploadMessage("");
+  }
+
+  function handleDrag(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    setIsDragging(event.type === "dragenter" || event.type === "dragover");
+  }
+
+  function handleDrop(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    setIsDragging(false);
+    addPhotos(event.dataTransfer.files);
+  }
+
+  function handleFileSelect(event) {
+    addPhotos(event.target.files);
+  }
+
+  function removePhoto(indexToRemove) {
+    setSelectedPhotos((currentPhotos) =>
+      currentPhotos.filter((photo, index) => index !== indexToRemove)
+    );
+  }
+
+  function uploadPhotos() {
+    if (!selectedPhotos.length) {
+      setUploadMessage("Please select photos before uploading.");
+      return;
+    }
+
+    setUploadedPhotos(selectedPhotos);
+    setUploadMessage(`${selectedPhotos.length} photo${selectedPhotos.length === 1 ? "" : "s"} uploaded.`);
+  }
+
+  function viewAllPhotos() {
+    const gallery = document.getElementById("ai-uploaded-photos");
+
+    if (gallery && uploadedPhotos.length) {
+      gallery.scrollIntoView({ behavior: "smooth" });
+      return;
+    }
+
+    setUploadMessage("Upload photos first to view them here.");
+  }
+
   return (
-    <main className="simple-page">
-      <section className="simple-page-hero finder-page-hero">
-        <div className="simple-page-content">
-          <span className="simple-page-badge">AI Photo Finder</span>
-          <h1>Find every guest photo in seconds</h1>
-          <p>
-            Upload a selfie and let PhotoFly match faces across thousands of
-            event photos. This page will become the working AI demo area.
-          </p>
+    <main className="ai-finder-page">
+      <section className="ai-finder-header">
+        <span className="ai-finder-badge">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M9 3v3M15 3v3M9 18v3M15 18v3M3 9h3M3 15h3M18 9h3M18 15h3" />
+            <rect x="7" y="7" width="10" height="10" rx="2" />
+            <path d="M10 10h4v4h-4z" />
+          </svg>
+          AI Superpower
+        </span>
+        <h1>AI Photo Finder Demo</h1>
+        <p>Upload a selfie -> AI scans thousands of photos -> You get your personal gallery.</p>
+      </section>
+
+      <section className="ai-upload-card" aria-label="Upload photos for AI finder">
+        <div className="ai-upload-card-header">
+          <h2>Upload Photos</h2>
+          <p>Upload event photos and let AI recognize every face</p>
+        </div>
+
+        <div className="ai-upload-card-body">
+          <div
+            className={`ai-drop-zone ${isDragging ? "active" : ""}`}
+            onDragEnter={handleDrag}
+            onDragLeave={handleDrag}
+            onDragOver={handleDrag}
+            onDrop={handleDrop}
+          >
+            <svg className="ai-upload-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 16V5" />
+              <path d="m7 10 5-5 5 5" />
+              <path d="M20 16.5V19a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-2.5" />
+            </svg>
+            <p>Drag & drop your photos here</p>
+            <small>or</small>
+            <label className="ai-select-button">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 16V5" />
+                <path d="m7 10 5-5 5 5" />
+                <path d="M20 16.5V19a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-2.5" />
+              </svg>
+              Select Photos
+              <input type="file" multiple accept="image/*" onChange={handleFileSelect} />
+            </label>
+            <span>Supports JPG, PNG, HEIC - up to 100MB each</span>
+          </div>
+
+          {selectedPhotos.length > 0 && (
+            <div className="ai-selected-photos">
+              <h3>Selected Photos ({selectedPhotos.length})</h3>
+              <div className="ai-photo-grid">
+                {selectedPhotos.slice(0, 16).map((photo, index) => (
+                  <div className="ai-photo-thumb" key={`${photo.name}-${index}`}>
+                    <img src={URL.createObjectURL(photo)} alt="" />
+                    <button type="button" onClick={() => removePhoto(index)} aria-label="Remove photo">
+                      x
+                    </button>
+                  </div>
+                ))}
+                {selectedPhotos.length > 16 && (
+                  <div className="ai-photo-more">+{selectedPhotos.length - 16}</div>
+                )}
+              </div>
+            </div>
+          )}
+
+          <div className="ai-upload-actions">
+            <button className="ai-upload-primary" type="button" onClick={uploadPhotos}>
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 16V5" />
+                <path d="m7 10 5-5 5 5" />
+                <path d="M20 16.5V19a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-2.5" />
+              </svg>
+              Upload Photo
+            </button>
+            <button className="ai-upload-secondary" type="button" onClick={viewAllPhotos}>
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M4 5h16v14H4z" />
+                <path d="m4 16 4-4 4 4 2-2 6 5" />
+                <path d="M8 9h.01" />
+              </svg>
+              View All Photo
+            </button>
+          </div>
+
+          {uploadMessage && <p className="ai-upload-message">{uploadMessage}</p>}
+
+          {uploadedPhotos.length > 0 && (
+            <div className="ai-uploaded-photos" id="ai-uploaded-photos">
+              <h3>All Uploaded Photos ({uploadedPhotos.length})</h3>
+              <div className="ai-photo-grid">
+                {uploadedPhotos.map((photo, index) => (
+                  <div className="ai-photo-thumb" key={`uploaded-${photo.name}-${index}`}>
+                    <img src={URL.createObjectURL(photo)} alt="" />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </section>
 
-      <section className="simple-page-grid">
-        <article className="simple-info-card">
-          <span>1</span>
-          <h2>Upload selfie</h2>
-          <p>Guests add one clear face photo to start the search.</p>
-        </article>
-        <article className="simple-info-card">
-          <span>2</span>
-          <h2>AI scans gallery</h2>
-          <p>PhotoFly checks the full event album for matching faces.</p>
-        </article>
-        <article className="simple-info-card">
-          <span>3</span>
-          <h2>Get personal gallery</h2>
-          <p>Matched photos appear together for quick viewing and sharing.</p>
-        </article>
+      <section className="ai-finder-stats" aria-label="AI finder overview">
+        {finderStats.map((stat) => (
+          <article key={stat.label}>
+            <div>
+              <span>{stat.label}</span>
+              <strong>{stat.value}</strong>
+              {stat.note && <small className={stat.noteTone || ""}>{stat.note}</small>}
+            </div>
+            <span className={`dashboard-stat-icon ${stat.tone}`}>{stat.icon}</span>
+          </article>
+        ))}
       </section>
     </main>
   );
