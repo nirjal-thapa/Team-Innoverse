@@ -71,7 +71,7 @@ function HomePage({ onChangePage }) {
 
           <div className="hero-visual">
             <img
-              src="https://images.pexels.com/photos/2253879/pexels-photo-2253879.jpeg?auto=compress&cs=tinysrgb&w=900&h=680&fit=crop"
+              src="/images/hero.png"
               alt="Wedding photo gallery"
             />
             <div className="ai-floating-card">
