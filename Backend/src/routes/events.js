@@ -62,8 +62,20 @@ router.post("/", auth, requireRole("photographer", "admin"), async (req, res) =>
       return res.status(201).json(localSeed.createEvent(req.user, req.body));
     }
 
-    const { name, date, description } = req.body;
-    const event = await Event.create({ name, date, description, photographerId: req.user._id });
+    const { name, date, description, code, coverImage, photoCount, status, progress } = req.body;
+    if (!name || !date) return res.status(400).json({ message: "Event name and date are required" });
+
+    const event = await Event.create({
+      name,
+      date,
+      description,
+      code,
+      coverImage,
+      photoCount,
+      status,
+      progress,
+      photographerId: req.user._id,
+    });
     res.status(201).json(event);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -79,10 +91,13 @@ router.patch("/:id", auth, requireRole("photographer", "admin"), async (req, res
       return res.json(event);
     }
 
+    const filter = req.user.role === "admin"
+      ? { _id: req.params.id }
+      : { _id: req.params.id, photographerId: req.user._id };
     const event = await Event.findOneAndUpdate(
-      { _id: req.params.id, photographerId: req.user._id },
+      filter,
       req.body,
-      { new: true }
+      { new: true, runValidators: true }
     );
     if (!event) return res.status(404).json({ message: "Event not found" });
     res.json(event);

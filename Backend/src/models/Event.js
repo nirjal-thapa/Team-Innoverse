@@ -15,11 +15,14 @@ const eventSchema = new mongoose.Schema({
   photoCount: { type: Number, default: 0 },
   searchCount: { type: Number, default: 0 },
   downloadCount: { type: Number, default: 0 },
+  status: { type: String, enum: ["Upload pending", "AI sorting", "Ready to share"], default: "Upload pending" },
+  progress: { type: Number, min: 0, max: 100, default: 0 },
   isActive: { type: Boolean, default: true },
 }, { timestamps: true });
 
 eventSchema.pre("save", function (next) {
-  if (!this.code) this.code = nanoid();
+  if (!this.code) this.code = `PF-${nanoid().slice(0, 3)}-${nanoid().slice(0, 4)}`;
+  this.code = this.code.toUpperCase();
   next();
 });
 

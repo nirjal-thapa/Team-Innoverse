@@ -1,11 +1,15 @@
 const router = require("express").Router();
-const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
+const stripe = process.env.STRIPE_SECRET_KEY ? require("stripe")(process.env.STRIPE_SECRET_KEY) : null;
 const { auth } = require("../middleware/auth");
 const User = require("../models/User");
 
 // POST /api/payments/create-checkout
 router.post("/create-checkout", auth, async (req, res) => {
   try {
+    if (!stripe) {
+      return res.status(503).json({ message: "Stripe is not configured" });
+    }
+
     const { plan } = req.body;
     const prices = { pro: process.env.STRIPE_PRO_PRICE_ID, studio: process.env.STRIPE_STUDIO_PRICE_ID };
     if (!prices[plan]) return res.status(400).json({ message: "Invalid plan" });
@@ -28,6 +32,10 @@ router.post("/create-checkout", auth, async (req, res) => {
 
 // POST /api/payments/webhook
 router.post("/webhook", require("express").raw({ type: "application/json" }), async (req, res) => {
+  if (!stripe) {
+    return res.status(503).json({ message: "Stripe is not configured" });
+  }
+
   const sig = req.headers["stripe-signature"];
   let event;
   try {

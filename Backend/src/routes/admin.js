@@ -3,12 +3,27 @@ const User = require("../models/User");
 const Event = require("../models/Event");
 const Photo = require("../models/Photo");
 const { auth, requireRole } = require("../middleware/auth");
+const runtime = require("../config/runtime");
+const localSeed = require("../data/localSeed");
 
 const adminOnly = [auth, requireRole("admin")];
 
 // GET /api/admin/stats
 router.get("/stats", ...adminOnly, async (req, res) => {
   try {
+    if (runtime.useLocalSeed) {
+      const totalUsers = localSeed.users.filter((user) => user.role === "user").length;
+      const totalPhotographers = localSeed.users.filter((user) => user.role === "photographer").length;
+      return res.json({
+        totalUsers,
+        totalPhotographers,
+        totalEvents: localSeed.events.length,
+        totalPhotos: localSeed.photos.length,
+        totalRevenue: 0,
+        storageUsedGB: Math.round(localSeed.photos.length * 0.003),
+      });
+    }
+
     const [totalUsers, totalPhotographers, totalEvents, totalPhotos] = await Promise.all([
       User.countDocuments({ role: "user" }),
       User.countDocuments({ role: "photographer" }),
@@ -32,6 +47,14 @@ router.get("/stats", ...adminOnly, async (req, res) => {
 // GET /api/admin/users
 router.get("/users", ...adminOnly, async (req, res) => {
   try {
+    if (runtime.useLocalSeed) {
+      const { role } = req.query;
+      const users = localSeed.users
+        .filter((user) => !role || user.role === role)
+        .map(localSeed.cleanUser);
+      return res.json({ users, total: users.length });
+    }
+
     const { page = 1, limit = 50, role } = req.query;
     const filter = role ? { role } : {};
     const users = await User.find(filter).sort({ createdAt: -1 }).skip((page - 1) * limit).limit(parseInt(limit));
@@ -45,6 +68,14 @@ router.get("/users", ...adminOnly, async (req, res) => {
 // PATCH /api/admin/users/:id/ban
 router.patch("/users/:id/ban", ...adminOnly, async (req, res) => {
   try {
+    if (runtime.useLocalSeed) {
+      const user = localSeed.users.find((item) => item._id === req.params.id);
+      if (!user) return res.status(404).json({ message: "User not found" });
+      user.banned = Boolean(req.body.banned);
+      user.updatedAt = new Date();
+      return res.json(localSeed.cleanUser(user));
+    }
+
     const user = await User.findByIdAndUpdate(req.params.id, { banned: req.body.banned }, { new: true });
     if (!user) return res.status(404).json({ message: "User not found" });
     res.json(user);
@@ -56,6 +87,12 @@ router.patch("/users/:id/ban", ...adminOnly, async (req, res) => {
 // DELETE /api/admin/users/:id
 router.delete("/users/:id", ...adminOnly, async (req, res) => {
   try {
+    if (runtime.useLocalSeed) {
+      const index = localSeed.users.findIndex((user) => user._id === req.params.id);
+      if (index !== -1) localSeed.users.splice(index, 1);
+      return res.json({ message: "User deleted" });
+    }
+
     await User.findByIdAndDelete(req.params.id);
     res.json({ message: "User deleted" });
   } catch (err) {
@@ -66,6 +103,10 @@ router.delete("/users/:id", ...adminOnly, async (req, res) => {
 // GET /api/admin/events
 router.get("/events", ...adminOnly, async (req, res) => {
   try {
+    if (runtime.useLocalSeed) {
+      return res.json({ events: localSeed.events.map((event) => ({ ...event })) });
+    }
+
     const events = await Event.find().populate("photographerId", "name email").sort({ createdAt: -1 }).limit(100);
     res.json({ events });
   } catch (err) {

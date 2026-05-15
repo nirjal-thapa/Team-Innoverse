@@ -5,7 +5,7 @@ const multer = require("multer");
 const Photo = require("../models/Photo");
 const Event = require("../models/Event");
 const { auth, requireRole } = require("../middleware/auth");
-const { uploadPhoto, cloudinary } = require("../config/cloudinary");
+const { uploadPhoto, cloudinary, uploadBuffer } = require("../config/cloudinary");
 const runtime = require("../config/runtime");
 const localSeed = require("../data/localSeed");
 const axios = require("axios");
@@ -33,6 +33,16 @@ const localUpload = multer({
 function runPhotoUpload(req, res, next) {
   const uploader = runtime.useLocalSeed ? localUpload : uploadPhoto;
   uploader.array("photos", 100)(req, res, next);
+}
+
+async function uploadFilesToCloudinary(files) {
+  return Promise.all((files || []).map((file) =>
+    uploadBuffer(file.buffer, {
+      folder: "snapfind/photos",
+      resource_type: "image",
+      transformation: [{ quality: "auto", fetch_format: "auto" }],
+    })
+  ));
 }
 
 // GET /api/photos?eventId=xxx
@@ -81,13 +91,18 @@ router.post("/upload", auth, requireRole("photographer", "admin"), runPhotoUploa
 
     const event = await Event.findById(eventId);
     if (!event) return res.status(404).json({ message: "Event not found" });
+    if (req.user.role !== "admin" && String(event.photographerId) !== String(req.user._id)) {
+      return res.status(403).json({ message: "Insufficient permissions" });
+    }
+
+    const cloudinaryFiles = await uploadFilesToCloudinary(req.files);
 
     const photos = await Photo.insertMany(
-      req.files.map((f) => ({
+      cloudinaryFiles.map((f) => ({
         eventId,
-        url: f.path,
-        publicId: f.filename,
-        thumbnailUrl: f.path.replace("/upload/", "/upload/w_400,h_400,c_fill/"),
+        url: f.secure_url,
+        publicId: f.public_id,
+        thumbnailUrl: f.secure_url.replace("/upload/", "/upload/w_400,h_400,c_fill/"),
         width: f.width,
         height: f.height,
         uploadedBy: req.user._id,
@@ -150,8 +165,14 @@ router.delete("/:id", auth, requireRole("photographer", "admin"), async (req, re
       return res.json({ message: "Photo deleted" });
     }
 
-    const photo = await Photo.findByIdAndDelete(req.params.id);
+    const photo = await Photo.findById(req.params.id);
     if (!photo) return res.status(404).json({ message: "Photo not found" });
+    const event = await Event.findById(photo.eventId);
+    if (event && req.user.role !== "admin" && String(event.photographerId) !== String(req.user._id)) {
+      return res.status(403).json({ message: "Insufficient permissions" });
+    }
+
+    await Photo.findByIdAndDelete(req.params.id);
     if (photo.publicId) await cloudinary.uploader.destroy(photo.publicId);
     await Event.findByIdAndUpdate(photo.eventId, { $inc: { photoCount: -1 } });
     res.json({ message: "Photo deleted" });
