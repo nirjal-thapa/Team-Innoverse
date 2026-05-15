@@ -60,6 +60,11 @@ app.get("/health", (req, res) => res.json({ status: "ok", timestamp: new Date() 
 
 // Serve the frontend from the same backend origin.
 const frontendPath = path.join(__dirname, "../../Frontend");
+<<<<<<< HEAD
+=======
+const imagesPath = path.join(__dirname, "../../images");
+app.use("/images", express.static(imagesPath));
+>>>>>>> c15db55ad95e424a5e704b947c91130fa693996a
 app.use(express.static(frontendPath));
 app.get("*", (req, res, next) => {
   if (req.path.startsWith("/api/")) return next();

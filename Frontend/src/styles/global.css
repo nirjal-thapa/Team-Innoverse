@@ -519,7 +519,7 @@ button {
   padding: 76px 0 88px;
   background:
     linear-gradient(135deg, rgba(255, 247, 237, 0.94), rgba(255, 255, 255, 0.82)),
-    url("https://images.pexels.com/photos/1264210/pexels-photo-1264210.jpeg?auto=compress&cs=tinysrgb&w=1600&h=900&fit=crop");
+    url("../../../images/hero.png");
   background-position: center;
   background-size: cover;
 }
