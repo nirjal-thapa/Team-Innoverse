@@ -144,6 +144,10 @@ function App() {
       setActiveAuthModal(null);
       setCurrentPage("dashboard");
     } catch (error) {
+      if (!error.isNetworkError) {
+        throw error;
+      }
+
       const newUser = {
         ...createLocalStudioUser(signupData.email),
         fullName: signupData.fullName,
