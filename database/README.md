@@ -1,6 +1,6 @@
 # 🗄️ Database — Photo Studio App
 
-Designed and implemented by **[sachinsanway](https://github.com/sachinsanway)**
+Designed and implemented by **[Your Name]**
 
 ---
 
