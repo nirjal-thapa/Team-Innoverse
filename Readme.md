@@ -1,7 +1,7 @@
 ## Database Architecture:
 ![Logo](./ER%20image/ER_diagram.png)
 
-Designed and implemented by **[nirjal-thapa](https://github.com/nirjal-thapa)**
+Designed and implemented by **[sachinsanway](https://github.com/sachinsanway)**
 
 ---
 
