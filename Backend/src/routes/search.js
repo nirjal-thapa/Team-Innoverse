@@ -4,6 +4,8 @@ const axios = require("axios");
 const Event = require("../models/Event");
 const Photo = require("../models/Photo");
 const SearchLog = require("../models/SearchLog");
+const runtime = require("../config/runtime");
+const localSeed = require("../data/localSeed");
 
 // Use memory storage for selfie (don't persist, just process)
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024 } });
@@ -14,6 +16,18 @@ router.post("/face", upload.single("selfie"), async (req, res) => {
     const { eventCode } = req.body;
     if (!req.file) return res.status(400).json({ message: "Selfie required" });
     if (!eventCode) return res.status(400).json({ message: "Event code required" });
+
+    if (runtime.useLocalSeed) {
+      const event = localSeed.findEventByCode(eventCode);
+      if (!event) return res.status(404).json({ message: "Event not found" });
+
+      const photos = localSeed.listPhotosForEvent(event._id).map((photo) => ({
+        ...photo,
+        similarity: 1,
+      }));
+
+      return res.json({ matches: photos, eventName: event.name, total: photos.length });
+    }
 
     // Find event
     const event = await Event.findOne({ code: eventCode.toUpperCase(), isActive: true });

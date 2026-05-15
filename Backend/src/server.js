@@ -9,15 +9,28 @@ const connectDB = require("./config/db");
 
 const app = express();
 
-// Connect DB
-connectDB();
-
 // Security middleware
 app.use(helmet({
   crossOriginResourcePolicy: { policy: "cross-origin" },
+  contentSecurityPolicy: false,
 }));
+
+const allowedOrigins = new Set([
+  process.env.FRONTEND_URL,
+  "http://localhost:3000",
+  "http://localhost:5000",
+  "http://localhost:5173",
+  "http://localhost:5500",
+  "http://127.0.0.1:5500",
+].filter(Boolean));
+
 app.use(cors({
-  origin: process.env.FRONTEND_URL || "http://localhost:3000",
+  origin(origin, callback) {
+    if (!origin || allowedOrigins.has(origin)) {
+      return callback(null, true);
+    }
+    return callback(new Error(`CORS blocked origin: ${origin}`));
+  },
   credentials: true,
 }));
 
@@ -25,7 +38,10 @@ app.use(cors({
 app.use("/api/", rateLimit({ windowMs: 15 * 60 * 1000, max: 200, message: "Too many requests" }));
 app.use("/api/search", rateLimit({ windowMs: 60 * 1000, max: 10, message: "Search rate limit exceeded" }));
 
-app.use(express.json({ limit: "10mb" }));
+app.use((req, res, next) => {
+  if (req.originalUrl === "/api/payments/webhook") return next();
+  return express.json({ limit: "10mb" })(req, res, next);
+});
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 app.use(morgan("dev"));
@@ -42,6 +58,14 @@ app.use("/api/payments", require("./routes/payments"));
 // Health check
 app.get("/health", (req, res) => res.json({ status: "ok", timestamp: new Date() }));
 
+// Serve the frontend from the same backend origin.
+const frontendPath = path.join(__dirname, "../../Frontend");
+app.use(express.static(frontendPath));
+app.get("*", (req, res, next) => {
+  if (req.path.startsWith("/api/")) return next();
+  res.sendFile(path.join(frontendPath, "index.html"));
+});
+
 // Error handler
 app.use((err, req, res, next) => {
   console.error(err.stack);
@@ -49,4 +73,6 @@ app.use((err, req, res, next) => {
 });
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+connectDB().finally(() => {
+  app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
+});
