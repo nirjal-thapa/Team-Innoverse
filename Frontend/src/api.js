@@ -8,14 +8,23 @@ const PhotoFlyApi = (() => {
       ...(options.headers || {}),
     };
 
-    const response = await fetch(`${baseUrl}${path}`, {
-      ...options,
-      headers,
-    });
+    let response;
+    try {
+      response = await fetch(`${baseUrl}${path}`, {
+        ...options,
+        headers,
+      });
+    } catch (error) {
+      const networkError = new Error("Backend unavailable");
+      networkError.isNetworkError = true;
+      throw networkError;
+    }
 
     const data = await response.json().catch(() => ({}));
     if (!response.ok) {
-      throw new Error(data.message || "Backend request failed");
+      const error = new Error(data.message || "Backend request failed");
+      error.status = response.status;
+      throw error;
     }
     return data;
   }

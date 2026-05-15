@@ -11,16 +11,25 @@ const signToken = (id) => jwt.sign({ id }, process.env.JWT_SECRET || "photo-fly-
 router.post("/register", async (req, res) => {
   try {
     const { name, email, password, role } = req.body;
-    if (!name || !email || !password) return res.status(400).json({ message: "All fields required" });
+    const normalizedEmail = String(email || "").trim().toLowerCase();
+    const trimmedName = String(name || "").trim();
+
+    if (!trimmedName || !normalizedEmail || !password) {
+      return res.status(400).json({ message: "All fields required" });
+    }
+
+    if (password.length < 8) {
+      return res.status(400).json({ message: "Password must be at least 8 characters" });
+    }
 
     if (runtime.useLocalSeed) {
-      const exists = localSeed.findUserByEmail(email);
+      const exists = localSeed.findUserByEmail(normalizedEmail);
       if (exists) return res.status(409).json({ message: "Email already registered" });
 
       const allowedRoles = ["user", "photographer"];
       const user = await localSeed.createUser({
-        name,
-        email,
+        name: trimmedName,
+        email: normalizedEmail,
         password,
         role: allowedRoles.includes(role) ? role : "user",
       });
@@ -28,11 +37,16 @@ router.post("/register", async (req, res) => {
       return res.status(201).json({ user, token });
     }
 
-    const exists = await User.findOne({ email });
+    const exists = await User.findOne({ email: normalizedEmail });
     if (exists) return res.status(409).json({ message: "Email already registered" });
 
     const allowedRoles = ["user", "photographer"];
-    const user = await User.create({ name, email, password, role: allowedRoles.includes(role) ? role : "user" });
+    const user = await User.create({
+      name: trimmedName,
+      email: normalizedEmail,
+      password,
+      role: allowedRoles.includes(role) ? role : "user",
+    });
     const token = signToken(user._id);
 
     res.status(201).json({ user, token });
