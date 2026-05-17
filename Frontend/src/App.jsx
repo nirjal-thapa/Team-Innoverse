@@ -47,7 +47,14 @@ function App() {
       email: apiUser.email,
       profileImage: apiUser.avatar || apiUser.profileImage || "",
       location: apiUser.location || "Kathmandu, Nepal",
-      currentPlan: apiUser.plan === "studio" ? "Studio Pro" : apiUser.plan || "Studio Pro",
+      currentPlan:
+        apiUser.plan === "studio"
+          ? "Studio Pro"
+          : apiUser.plan_tier === "pro"
+          ? "Pro"
+          : apiUser.plan_tier === "enterprise"
+          ? "Enterprise"
+          : apiUser.plan || "Studio Pro",
       memberSince: memberDate.toLocaleDateString("en-US", {
         month: "long",
         year: "numeric",
@@ -144,16 +151,8 @@ function App() {
       setActiveAuthModal(null);
       setCurrentPage("dashboard");
     } catch (error) {
-      const newUser = {
-        ...createLocalStudioUser(signupData.email),
-        fullName: signupData.fullName,
-        recentActivity: [createActivity("Account created in local data mode")],
-      };
-
-      saveUser(newUser, "");
-      addNotifications(["Backend unavailable, using local data mode"]);
-      setActiveAuthModal(null);
-      setCurrentPage("dashboard");
+      console.error("Signup failed:", error);
+      alert(`Signup failed: ${error.message}`);
     }
   }
 
