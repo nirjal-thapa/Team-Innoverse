@@ -6,6 +6,16 @@ function SignupModal({ isOpen = true, onClose = () => {}, onSignup = () => {} })
     confirmPassword: "",
   });
   const [errors, setErrors] = React.useState({});
+  const [submitError, setSubmitError] = React.useState("");
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
+
+  React.useEffect(() => {
+    if (isOpen) {
+      setErrors({});
+      setSubmitError("");
+      setIsSubmitting(false);
+    }
+  }, [isOpen]);
 
   if (!isOpen) {
     return null;
@@ -17,6 +27,11 @@ function SignupModal({ isOpen = true, onClose = () => {}, onSignup = () => {} })
       ...currentData,
       [name]: value,
     }));
+    setErrors((currentErrors) => ({
+      ...currentErrors,
+      [name]: "",
+    }));
+    setSubmitError("");
   }
 
   function validateForm() {
@@ -34,8 +49,8 @@ function SignupModal({ isOpen = true, onClose = () => {}, onSignup = () => {} })
 
     if (!formData.password) {
       nextErrors.password = "Password is required.";
-    } else if (formData.password.length < 6) {
-      nextErrors.password = "Password must be at least 6 characters.";
+    } else if (formData.password.length < 8) {
+      nextErrors.password = "Password must be at least 8 characters.";
     }
 
     if (!formData.confirmPassword) {
@@ -48,11 +63,25 @@ function SignupModal({ isOpen = true, onClose = () => {}, onSignup = () => {} })
     return Object.keys(nextErrors).length === 0;
   }
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault();
 
-    if (validateForm()) {
-      onSignup(formData);
+    if (!validateForm()) {
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+      setSubmitError("");
+      await onSignup({
+        ...formData,
+        fullName: formData.fullName.trim(),
+        email: formData.email.trim().toLowerCase(),
+      });
+    } catch (error) {
+      setSubmitError(error.message || "Could not create your account. Please try again.");
+    } finally {
+      setIsSubmitting(false);
     }
   }
 
@@ -130,8 +159,10 @@ function SignupModal({ isOpen = true, onClose = () => {}, onSignup = () => {} })
             {errors.confirmPassword && <small className="field-error">{errors.confirmPassword}</small>}
           </label>
 
-          <button className="auth-submit-button" type="submit">
-            Signup
+          {submitError && <small className="field-error">{submitError}</small>}
+
+          <button className="auth-submit-button" type="submit" disabled={isSubmitting}>
+            {isSubmitting ? "Creating account..." : "Signup"}
           </button>
 
           <div className="auth-divider">

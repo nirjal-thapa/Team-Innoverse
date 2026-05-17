@@ -9,16 +9,25 @@ const localSeed = require("../data/localSeed");
 router.post("/register", async (req, res) => {
   try {
     const { name, email, password, role } = req.body;
-    if (!name || !email || !password) return res.status(400).json({ message: "All fields required" });
+    const normalizedEmail = String(email || "").trim().toLowerCase();
+    const trimmedName = String(name || "").trim();
+
+    if (!trimmedName || !normalizedEmail || !password) {
+      return res.status(400).json({ message: "All fields required" });
+    }
+
+    if (password.length < 8) {
+      return res.status(400).json({ message: "Password must be at least 8 characters" });
+    }
 
     if (runtime.useLocalSeed) {
-      const exists = localSeed.findUserByEmail(email);
+      const exists = localSeed.findUserByEmail(normalizedEmail);
       if (exists) return res.status(409).json({ message: "Email already registered" });
 
       const allowedRoles = ["user", "photographer"];
       const user = await localSeed.createUser({
-        name,
-        email,
+        name: trimmedName,
+        email: normalizedEmail,
         password,
         role: allowedRoles.includes(role) ? role : "user",
       });
@@ -26,8 +35,22 @@ router.post("/register", async (req, res) => {
       return res.status(201).json({ user, token });
     }
 
+<<<<<<< HEAD
     const allowedRoles = ["user", "photographer"];
     const userRole = allowedRoles.includes(role) ? role : "user";
+=======
+    const exists = await User.findOne({ email: normalizedEmail });
+    if (exists) return res.status(409).json({ message: "Email already registered" });
+
+    const allowedRoles = ["user", "photographer"];
+    const user = await User.create({
+      name: trimmedName,
+      email: normalizedEmail,
+      password,
+      role: allowedRoles.includes(role) ? role : "user",
+    });
+    const token = signToken(user._id);
+>>>>>>> 5ecfa6781c9597f914eed0007c30b82bafe502d4
 
     const { data: authUserData, error: authError } = await supabase.auth.admin.createUser({
       email,

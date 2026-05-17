@@ -151,8 +151,25 @@ function App() {
       setActiveAuthModal(null);
       setCurrentPage("dashboard");
     } catch (error) {
+<<<<<<< HEAD
       console.error("Signup failed:", error);
       alert(`Signup failed: ${error.message}`);
+=======
+      if (!error.isNetworkError) {
+        throw error;
+      }
+
+      const newUser = {
+        ...createLocalStudioUser(signupData.email),
+        fullName: signupData.fullName,
+        recentActivity: [createActivity("Account created in local data mode")],
+      };
+
+      saveUser(newUser, "");
+      addNotifications(["Backend unavailable, using local data mode"]);
+      setActiveAuthModal(null);
+      setCurrentPage("dashboard");
+>>>>>>> 5ecfa6781c9597f914eed0007c30b82bafe502d4
     }
   }
 

@@ -30,6 +30,7 @@ button {
 .navbar-brand {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 14px;
 }
 
@@ -58,6 +59,43 @@ button {
   justify-content: center;
   gap: 24px;
   flex: 1;
+}
+
+.navbar-panel {
+  display: contents;
+}
+
+.navbar-menu-button {
+  display: none;
+  width: 42px;
+  height: 42px;
+  padding: 9px;
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.navbar-menu-button span {
+  display: block;
+  width: 100%;
+  height: 2px;
+  margin: 5px 0;
+  background: #92400e;
+  border-radius: 999px;
+  transition: transform 0.18s ease, opacity 0.18s ease;
+}
+
+.navbar.menu-open .navbar-menu-button span:nth-child(1) {
+  transform: translateY(7px) rotate(45deg);
+}
+
+.navbar.menu-open .navbar-menu-button span:nth-child(2) {
+  opacity: 0;
+}
+
+.navbar.menu-open .navbar-menu-button span:nth-child(3) {
+  transform: translateY(-7px) rotate(-45deg);
 }
 
 .nav-link {
@@ -138,6 +176,7 @@ button {
 }
 
 .profile-button:focus-visible,
+.navbar-menu-button:focus-visible,
 .login-nav-button:focus-visible,
 .signup-nav-button:focus-visible,
 .notification-button:focus-visible {
@@ -480,7 +519,7 @@ button {
   padding: 76px 0 88px;
   background:
     linear-gradient(135deg, rgba(255, 247, 237, 0.94), rgba(255, 255, 255, 0.82)),
-    url("https://images.pexels.com/photos/1264210/pexels-photo-1264210.jpeg?auto=compress&cs=tinysrgb&w=1600&h=900&fit=crop");
+    url("../../../images/hero.png");
   background-position: center;
   background-size: cover;
 }
@@ -2678,23 +2717,77 @@ button {
   .navbar {
     align-items: stretch;
     flex-direction: column;
-    padding: 16px 20px;
+    gap: 0;
+    padding: 12px 18px;
   }
 
-  .navbar-brand,
-  .nav-links,
-  .navbar-actions {
+  .navbar-brand {
     width: 100%;
   }
 
+  .navbar-menu-button {
+    display: block;
+  }
+
+  .navbar-panel {
+    display: block;
+    width: 100%;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.22s ease;
+  }
+
+  .navbar.menu-open .navbar-panel {
+    max-height: 520px;
+  }
+
   .nav-links {
+    flex-direction: column;
+    align-items: stretch;
     justify-content: flex-start;
-    overflow-x: auto;
-    gap: 18px;
+    gap: 6px;
+    padding-top: 14px;
+  }
+
+  .nav-link {
+    width: 100%;
+    min-height: 42px;
+    padding: 10px 12px;
+    text-align: left;
+    border: 1px solid transparent;
+    border-radius: 8px;
+  }
+
+  .nav-link:hover,
+  .nav-link.active {
+    background: #fff7ed;
+    border-color: #fed7aa;
   }
 
   .navbar-actions {
-    flex-wrap: wrap;
+    align-items: stretch;
+    flex-direction: column;
+    gap: 10px;
+    padding: 12px 0 4px;
+  }
+
+  .navbar-actions .login-nav-button,
+  .navbar-actions .signup-nav-button,
+  .navbar-actions .icon-button,
+  .navbar-actions .profile-button {
+    width: 100%;
+  }
+
+  .profile-area,
+  .notification-area {
+    width: 100%;
+  }
+
+  .profile-menu,
+  .notification-menu {
+    position: static;
+    width: 100%;
+    margin-top: 10px;
   }
 
   .logo-image {
