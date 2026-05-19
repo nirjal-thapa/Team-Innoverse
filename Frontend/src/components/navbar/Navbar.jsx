@@ -14,7 +14,6 @@ function Navbar({
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
   const pages = [
     { id: "home", label: "Home" },
-    ...(isLoggedIn ? [{ id: "dashboard", label: "Studio Home" }] : []),
     { id: "finder", label: "AI Finder" },
     { id: "packages", label: "Packages" },
     { id: "contact", label: "Contact" },

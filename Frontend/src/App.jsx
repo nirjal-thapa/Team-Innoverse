@@ -4,7 +4,9 @@ function App() {
   const tokenStorageKey = "photoFly_authToken";
   const notificationsStorageKey = "photoFly_notifications";
   const studioName = "Innoverse Studio";
-  const [currentPage, setCurrentPage] = React.useState("home");
+  const [currentPage, setCurrentPage] = React.useState(() =>
+    window.location.pathname.includes("/photographer") ? "photographer" : "home"
+  );
   const [activeAuthModal, setActiveAuthModal] = React.useState(null);
   const [currentUser, setCurrentUser] = React.useState(null);
   const [authToken, setAuthToken] = React.useState("");
@@ -149,12 +151,8 @@ function App() {
       saveUser(newUser, result.token);
       addNotifications(["Account created successfully"]);
       setActiveAuthModal(null);
-      setCurrentPage("dashboard");
+      openPhotographerDashboard();
     } catch (error) {
-<<<<<<< HEAD
-      console.error("Signup failed:", error);
-      alert(`Signup failed: ${error.message}`);
-=======
       if (!error.isNetworkError) {
         throw error;
       }
@@ -168,8 +166,7 @@ function App() {
       saveUser(newUser, "");
       addNotifications(["Backend unavailable, using local data mode"]);
       setActiveAuthModal(null);
-      setCurrentPage("dashboard");
->>>>>>> 5ecfa6781c9597f914eed0007c30b82bafe502d4
+      openPhotographerDashboard();
     }
   }
 
@@ -187,13 +184,13 @@ function App() {
       saveUser(loggedInUser, result.token);
       addNotifications(["You logged in successfully"]);
       setActiveAuthModal(null);
-      setCurrentPage("dashboard");
+      openPhotographerDashboard();
     } catch (error) {
       if (loginData.email === "studio@photofly.com" && loginData.password === "password123") {
         saveUser(createLocalStudioUser(loginData.email), "");
         addNotifications(["Backend unavailable, using local data mode"]);
         setActiveAuthModal(null);
-        setCurrentPage("dashboard");
+        openPhotographerDashboard();
         return;
       }
 
@@ -223,9 +220,21 @@ function App() {
     setAuthToken("");
     setActiveAuthModal(null);
     setCurrentPage("home");
+    if (window.location.pathname.includes("/photographer")) {
+      window.history.pushState({}, "", "/Frontend/");
+    }
+  }
+
+  function openPhotographerDashboard() {
+    setCurrentPage("photographer");
+    window.history.pushState({}, "", "/Frontend/photographer/");
   }
 
   function showCurrentPage() {
+    if (currentPage === "photographer") {
+      return <PhotographerDashboard user={currentUser || createLocalStudioUser()} onLogout={handleLogout} />;
+    }
+
     if (currentPage === "packages") {
       return <PackagesPage />;
     }
@@ -233,14 +242,6 @@ function App() {
     if (currentPage === "profile") {
       return isLoggedIn ? (
         <ProfilePage user={currentUser} onUpdateUser={handleProfileUpdate} />
-      ) : (
-        <HomePage onChangePage={setCurrentPage} />
-      );
-    }
-
-    if (currentPage === "dashboard") {
-      return isLoggedIn ? (
-        <StudioDashboard user={currentUser} authToken={authToken} onChangePage={setCurrentPage} />
       ) : (
         <HomePage onChangePage={setCurrentPage} />
       );
@@ -267,22 +268,24 @@ function App() {
 
   return (
     <>
-      <Navbar
-        currentPage={currentPage}
-        studioName={studioName}
-        user={currentUser}
-        isLoggedIn={isLoggedIn}
-        notifications={notifications}
-        onChangePage={setCurrentPage}
-        onOpenLogin={() => setActiveAuthModal("login")}
-        onOpenSignup={() => setActiveAuthModal("signup")}
-        onLogout={handleLogout}
-        onMarkAllNotificationsRead={markAllNotificationsRead}
-      />
+      {currentPage !== "photographer" && (
+        <Navbar
+          currentPage={currentPage}
+          studioName={studioName}
+          user={currentUser}
+          isLoggedIn={isLoggedIn}
+          notifications={notifications}
+          onChangePage={setCurrentPage}
+          onOpenLogin={() => setActiveAuthModal("login")}
+          onOpenSignup={() => setActiveAuthModal("signup")}
+          onLogout={handleLogout}
+          onMarkAllNotificationsRead={markAllNotificationsRead}
+        />
+      )}
 
       {showCurrentPage()}
 
-      <Footer onChangePage={setCurrentPage} />
+      {currentPage !== "photographer" && <Footer onChangePage={setCurrentPage} />}
 
       <LoginModal
         isOpen={activeAuthModal === "login"}

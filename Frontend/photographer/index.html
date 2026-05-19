@@ -3,23 +3,19 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>PhotoFly Rebuild</title>
+  <title>PhotoFly Photographer</title>
+  <base href="/Frontend/" />
 
   <link rel="stylesheet" href="src/styles/global.css" />
   <link rel="stylesheet" href="src/components/footer/Footer.css" />
 
-  <!-- React is the library. ReactDOM connects React to the browser page. -->
   <script src="vendor/react.development.js"></script>
   <script src="vendor/react-dom.development.js"></script>
-
-  <!-- Babel lets the browser understand JSX while we are learning. -->
   <script src="vendor/babel.min.js"></script>
 </head>
 <body>
-  <!-- React will place our whole app inside this div. -->
   <div id="root"></div>
 
-  <!-- Component files are loaded before App because App uses them. -->
   <script type="text/babel" src="src/components/notifications/NotificationButton.jsx"></script>
   <script type="text/babel" src="src/components/navbar/Navbar.jsx"></script>
   <script type="text/babel" src="src/components/auth/LoginModal.jsx"></script>

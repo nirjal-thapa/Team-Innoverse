@@ -93,7 +93,6 @@ function ContactPage() {
             <span>Topic</span>
             <select name="topic" defaultValue="AI photo finder">
               <option>AI photo finder</option>
-              <option>Studio dashboard</option>
               <option>Packages and pricing</option>
               <option>Event gallery support</option>
             </select>
